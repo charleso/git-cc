@@ -1,0 +1,5 @@
+users = {
+    'charleso': "Charles O'Farrell",\
+}
+
+mailSuffix = 'example.com'
