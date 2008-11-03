@@ -5,14 +5,7 @@ from os import listdir
 from os.path import isdir, abspath
 
 def checkin(args):
-    stash = '--stash' in args
-    if not stash:
-        checkPristine()
     cc_exec(['update', '.'])
-    git_exec(['log', '--pretty=format:%H', '-n', '1'])
-    doStash(commit, stash)
-
-def commit():
     log = git_exec(['log', '--reverse', '--pretty=format:%H%n%s%n%b', CC_TAG + '..'])
     comment = []
     id = None
