@@ -74,7 +74,7 @@ class Transaction:
         cc_exec(['co', '-reserved', '-nc', file])
         if not isdir(join(CC_DIR, file)):
             ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
-            gitid = git_exec(['ls-tree', '-z', CC_TAG, file]).split(' ')[2].split('\t')[0]
+            gitid = getBlob(CC_TAG, file)
             if ccid != gitid:
                 raise Exception('File has been modified: %s. Try rebasing.' % file)
     def mkdirelem(self, file):

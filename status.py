@@ -8,7 +8,7 @@ class Status:
         self.file = file
         self.ccfile = join(CC_DIR, self.file)
     def cat(self):
-        blob = git_exec(['show', '%s:%s' % (self.id, self.file)])
+        blob = git_exec(['cat-file', 'blob', getBlob(self.id, self.file)])
         write(self.ccfile, blob)
     def stageDirs(self, t):
         dir = dirname(self.ccfile)

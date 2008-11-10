@@ -39,6 +39,9 @@ def tag(id="HEAD"):
 def reset(tag=CC_TAG):
     git_exec(['reset', '--hard', tag])
 
+def getBlob(sha, file):
+    return git_exec(['ls-tree', '-z', sha, file]).split(' ')[2].split('\t')[0]
+
 def gitDir():
     def findGitDir(dir):
         if not exists(dir):
@@ -74,7 +77,7 @@ def checkPristine():
         fail('There are uncommitted files in your git directory')
 
 def write(file, blob):
-    f = open(file, 'w')
+    f = open(file, 'wb')
     f.write(blob)
     f.close()
 
