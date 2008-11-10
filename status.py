@@ -15,7 +15,7 @@ class Status:
         dirs = []
         while not exists(dir):
             dirs.append(dir)
-            dir = parent(dir)
+            dir = dirname(dir)
         self.dirs = dirs
         t.stage(dir)
     def commitDirs(self, t):

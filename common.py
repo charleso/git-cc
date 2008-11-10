@@ -41,13 +41,12 @@ def reset(tag=CC_TAG):
 
 def gitDir():
     def findGitDir(dir):
-        abs = abspath(dir)
-        if not exists(abs):
+        if not exists(dir):
             return '.'
-        if exists(join(abs, '.git')):
-            return abs
-        return findGitDir(parent(dir))
-    return findGitDir('.')
+        if exists(join(dir, '.git')):
+            return dir
+        return findGitDir(dirname(dir))
+    return findGitDir(abspath('.'))
 
 class GitConfigParser():
     section = 'gitcc'
@@ -78,9 +77,6 @@ def write(file, blob):
     f = open(file, 'w')
     f.write(blob)
     f.close()
-
-def parent(file):
-    return join(file, '..')
 
 def mkdirs(file):
     dir = dirname(file)
