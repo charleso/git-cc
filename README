@@ -16,6 +16,12 @@ soon).
 
 Suggestions on anything I've done are more than welcome.
 
+Also, I have made a change recently to support adding binary files which uses
+git-cat. Unfortunately git-cat doesn't handle end line conversions and so I
+would strongly recommended turning off core.autocrlf before importing your
+history!!! Don't try changing this after your first commit either as it will
+only make matters worse. My apologies to anyone that is stung by this.
+
 Workflow
 ========
 
