@@ -5,11 +5,12 @@ from fnmatch import fnmatch
 
 def sync(args):
     base = abspath(CC_DIR)
-    for (dirpath, dirnames, filenames) in os.walk(CC_DIR):
-        reldir = dirpath[len(base)+1:]
-        for file in filenames:
-            if fnmatch(file, '*.jar'):
-                newFile = join(GIT_DIR, reldir, file)
-                debug('Copying %s' % newFile)
-                mkdirs(newFile)
-                shutil.copy(join(dirpath, file), newFile)
+    for i in cfg.getList('include', '.'):
+        for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):
+            reldir = dirpath[len(base)+1:]
+            for file in filenames:
+                if fnmatch(file, '*.jar'):
+                    newFile = join(GIT_DIR, reldir, file)
+                    debug('Copying %s' % newFile)
+                    mkdirs(newFile)
+                    shutil.copy(join(dirpath, file), newFile)
