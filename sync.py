@@ -1,5 +1,5 @@
 from common import *
-import os, shutil
+import os, shutil, stat
 from os.path import join, abspath
 from fnmatch import fnmatch
 
@@ -14,3 +14,4 @@ def sync(args):
                     debug('Copying %s' % newFile)
                     mkdirs(newFile)
                     shutil.copy(join(dirpath, file), newFile)
+                    os.chmod(newFile, stat.S_IWRITE)
