@@ -53,8 +53,8 @@ class Rename(Status):
         t.stage(dirname(self.old))
         t.stage(self.old)
         self.stageDirs(t)
-        t.stage(self.new)
     def commit(self, t):
         self.commitDirs(t)
         cc_exec(['mv', '-nc', self.old, self.new])
+        t._add(self.new)
         self.cat()
