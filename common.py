@@ -77,6 +77,9 @@ def checkPristine():
         fail('There are uncommitted files in your git directory')
 
 def write(file, blob):
+    _write(file, blob)
+
+def _write(file, blob):
     f = open(file, 'wb')
     f.write(blob)
     f.close()
