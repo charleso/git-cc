@@ -56,5 +56,6 @@ class Rename(Status):
     def commit(self, t):
         self.commitDirs(t)
         cc_exec(['mv', '-nc', self.old, self.new])
+        t.checkedout.remove(self.old)
         t._add(self.new)
         self.cat()
