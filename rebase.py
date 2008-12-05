@@ -125,12 +125,13 @@ class Group:
         self.files.append(cs)
     def commit(self):
         def getUserEmail(user):
-            return '<%s@%s>' % (self.user.lower().replace(' ','.').replace("'", ''), mailSuffix)
+            return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), mailSuffix)
         for file in self.files:
             file.add()
         env = {}
+        user = users[self.user]
         env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = self.date
-        env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = user = users[self.user]
+        env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = user
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         git_exec(['commit', '-m', comment], env=env)
