@@ -22,7 +22,7 @@ class CheckinTest(TestCaseEx):
         self.expectedExec.extend([\
             (['git', 'diff', '--name-status', '-M', '-z', '%s^..%s' % (commit, commit)], '\n'.join(nameStatus)), \
         ])
-        types = {'M': MockModfy, 'A': MockAdd}
+        types = {'M': MockModfy, 'A': MockAdd, 'D': MockDelete}
         for type, file in files:
             types[type](self.expectedExec, commit, message, file)
         self.expectedExec.extend([\
@@ -38,6 +38,10 @@ class CheckinTest(TestCaseEx):
         self.checkin();
     def testFolderAdd(self):
         self.commit('sha4', 'commit4', [('A', 'a/b/c/d.py')])
+        self.checkin();
+    def testDelete(self):
+        os.mkdir(join(CC_DIR, 'd'))
+        self.commit('sha4', 'commit4', [('D', 'd/e.py')])
         self.checkin();
 
 class MockStatus:
@@ -85,6 +89,15 @@ class MockAdd(MockStatus):
         for f in files:
             e.append(self.ci(message, f))
         e.append(self.ci(message, file))
+
+class MockDelete(MockStatus):
+    def __init__(self, e, commit, message, file):
+        dir = file[0:file.rfind('/')]
+        e.extend([\
+            self.co(dir), \
+            (['cleartool', 'rm', file], ''), \
+            self.ci(message, dir), \
+        ])
 
 if __name__ == "__main__":
     unittest.main()
