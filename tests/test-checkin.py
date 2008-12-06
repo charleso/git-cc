@@ -1,7 +1,7 @@
 from __init__ import *
 import checkin, common
 import unittest, os
-from os.path import join
+from os.path import join, abspath
 from common import CC_DIR, CC_TAG
 
 class CheckinTest(TestCaseEx):
@@ -36,6 +36,9 @@ class CheckinTest(TestCaseEx):
         self.commit('sha2', 'commit2', [('M', 'b.py')])
         self.commit('sha3', 'commit3', [('A', 'c.py')])
         self.checkin();
+    def testFolderAdd(self):
+        self.commit('sha4', 'commit4', [('A', 'a/b/c/d.py')])
+        self.checkin();
 
 class MockStatus:
     def lsTree(self, id, file, hash):
@@ -65,18 +68,23 @@ class MockModfy(MockStatus):
         expectedExec.append((['cleartool', 'ci', '-c', message, file], ''))
 
 class MockAdd(MockStatus):
-    def __init__(self, expectedExec, commit, message, file):
+    def __init__(self, e, commit, message, file):
         hash = 'hash'
-        expectedExec.extend([\
-            self.co(CC_DIR), \
-            self.lsTree(commit, file, hash), \
-        ])
-        expectedExec.extend(self.catFile(file, hash))
-        expectedExec.extend([\
-            (['cleartool', 'mkelem', '-nc', file], ''), \
-            self.ci(message, CC_DIR), \
-            self.ci(message, file), \
-        ])
+        files = []
+        files.append(CC_DIR)
+        e.append(self.co(CC_DIR))
+        path = ""
+        for f in file.split('/')[0:-1]:
+            path = path + f + '/'
+            f = join(CC_DIR, path[0:-1])
+            files.append(f)
+            e.append((['cleartool', 'mkelem', '-nc', '-eltype', 'directory', abspath(f)], ''))
+        e.append(self.lsTree(commit, file, hash))
+        e.extend(self.catFile(file, hash))
+        e.append((['cleartool', 'mkelem', '-nc', file], ''))
+        for f in files:
+            e.append(self.ci(message, f))
+        e.append(self.ci(message, file))
 
 if __name__ == "__main__":
     unittest.main()
