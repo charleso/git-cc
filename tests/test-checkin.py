@@ -1,6 +1,6 @@
 from __init__ import *
 import checkin, common
-import unittest
+import unittest, os
 from os.path import join
 from common import CC_DIR, CC_TAG
 
@@ -22,7 +22,7 @@ class CheckinTest(TestCaseEx):
         self.expectedExec.extend([\
             (['git', 'diff', '--name-status', '-M', '-z', '%s^..%s' % (commit, commit)], '\n'.join(nameStatus)), \
         ])
-        types = {'M': MockModfy}
+        types = {'M': MockModfy, 'A': MockAdd}
         for type, file in files:
             types[type](self.expectedExec, commit, message, file)
         self.expectedExec.extend([\
@@ -32,23 +32,50 @@ class CheckinTest(TestCaseEx):
     def testEmpty(self):
         self.checkin()
     def testSimple(self):
-        self.commit('sha1', 'commit1', [('M', 'rebase.py')])
-        self.commit('sha2', 'commit2', [('M', 'rebase2.py')])
+        self.commit('sha1', 'commit1', [('M', 'a.py')])
+        self.commit('sha2', 'commit2', [('M', 'b.py')])
+        self.commit('sha3', 'commit3', [('A', 'c.py')])
         self.checkin();
 
-class MockModfy:
+class MockStatus:
+    def lsTree(self, id, file, hash):
+        return (['git', 'ls-tree', '-z', id, file], '100644 blob %s %s' % (hash, file))
+    def catFile(self, file, hash):
+        blob = "blob"
+        return [\
+            (['git', 'cat-file', 'blob', hash], blob), \
+            (join(CC_DIR, file), blob), \
+        ]
+    def co(self, file):
+        return (['cleartool', 'co', '-reserved', '-nc', file], '')
+    def ci(self, message, file):
+        return (['cleartool', 'ci', '-c', message, file], '')
+
+class MockModfy(MockStatus):
     def __init__(self, expectedExec, commit, message, file):
         hash1 = "hash1"
         hash2 = "hash2"
-        blob = "blob"
         expectedExec.extend([\
-            (['cleartool', 'co', '-reserved', '-nc', file], ''), \
+            self.co(file), \
             (['git', 'hash-object', join(CC_DIR, file)], hash1 + '\n'), \
-            (['git', 'ls-tree', '-z', CC_TAG, file], '100644 blob %s %s' % (hash1, file)), \
-            (['git', 'ls-tree', '-z', commit, file], '100644 blob %s %s' % (hash2, file)), \
-            (['git', 'cat-file', 'blob', hash2], blob), \
-            (join(CC_DIR, file), blob), \
-            (['cleartool', 'ci', '-c', message, file], ''), \
+            self.lsTree(CC_TAG, file, hash1), \
+            self.lsTree(commit, file, hash2), \
+        ])
+        expectedExec.extend(self.catFile(file, hash2))
+        expectedExec.append((['cleartool', 'ci', '-c', message, file], ''))
+
+class MockAdd(MockStatus):
+    def __init__(self, expectedExec, commit, message, file):
+        hash = 'hash'
+        expectedExec.extend([\
+            self.co(CC_DIR), \
+            self.lsTree(commit, file, hash), \
+        ])
+        expectedExec.extend(self.catFile(file, hash))
+        expectedExec.extend([\
+            (['cleartool', 'mkelem', '-nc', file], ''), \
+            self.ci(message, CC_DIR), \
+            self.ci(message, file), \
         ])
 
 if __name__ == "__main__":

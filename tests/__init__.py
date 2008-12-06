@@ -1,9 +1,9 @@
-import sys
+import sys, os, shutil
 sys.path.append("..")
 import common
 import unittest
 
-common.CC_DIR = "/tmp"
+common.CC_DIR = "/tmp/cc_temp"
 
 class TestCaseEx(unittest.TestCase):
     def setUp(self):
@@ -20,4 +20,6 @@ class TestCaseEx(unittest.TestCase):
             self.assertEquals(check(file), blob)
         common.popen = mockPopen
         common._write = mockWrite
-
+        os.makedirs(common.CC_DIR)
+    def tearDown(self):
+        shutil.rmtree(common.CC_DIR)
