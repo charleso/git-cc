@@ -1,4 +1,5 @@
 from common import *
+from clearcase import cc
 from status import Modify, Add, Delete, Rename
 import filecmp
 from os import listdir
@@ -6,6 +7,7 @@ from os.path import isdir, abspath
 
 def checkin(args):
     cc_exec(['update', '.'])
+    cc.update()
     log = git_exec(['log', '--reverse', '--pretty=format:%H%n%s%n%b', CC_TAG + '..'])
     comment = []
     id = None
@@ -45,7 +47,7 @@ def getStatuses(id):
 def checkout(stats, comment):
     """Poor mans two-phase commit"""
     failed = None
-    transaction = Transaction()
+    transaction = Transaction(comment)
     for stat in stats:
         try:
             stat.stage(transaction)
@@ -60,8 +62,9 @@ def checkout(stats, comment):
     transaction.commit(comment);
 
 class Transaction:
-    def __init__(self):
+    def __init__(self, comment):
         self.checkedout = []
+        cc.mkact(comment)
     def _add(self, file):
         if file in self.checkedout:
             debug("File already staged %s" % file)
@@ -86,7 +89,9 @@ class Transaction:
     def rollback(self):
         for file in self.checkedout:
             cc_exec(['unco', '-rm', file])
+        cc.rmactivity()
     def commit(self, comment):
         for file in self.checkedout:
             cc_exec(['ci', '-c', comment, file])
+        cc.commit()
         # TODO self.rollback()

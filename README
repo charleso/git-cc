@@ -1,7 +1,7 @@
 git-cc
 ======
 
-Simple bridge between base Clearcase and Git.
+Simple bridge between base Clearcase or UCM and Git.
 
 Warning
 =======
@@ -70,6 +70,13 @@ Notes
 Can either work with static or dynamic views. I use dynamic at work because
 it's much faster not having to update. I've done an update in rebase anyway,
 just-in-case someone wants to use it that way.
+
+Can also work with UCM, which requires the 'type' config to be set to 'UCM'.
+This is still a work in progress as I only recently switched to this at work.
+Note the the history is still retrieved via lshistory and not specifically from
+any activity information. This is largely for convenience for me so I don't have
+to rewrite everything. Therefore things like 'recommended' baselines are ignored.
+I don't know if this will cause any major dramas or not.
 
 Behind the scenes
 =================

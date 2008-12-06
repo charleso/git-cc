@@ -4,13 +4,14 @@ from common import *
 from datetime import datetime, timedelta
 from users import users, mailSuffix
 from fnmatch import fnmatch
+from clearcase import cc
 
 """
 Things remaining:
 1. Renames with no content change. Tricky.
 """
 
-CC_LSH = ['lsh', '-fmt', '%o%m|%d|%u|%En|%Vn|%Nc\\n', '-recurse']
+CC_LSH = ['lsh', '-fmt', '%o%m|%d|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
 DELIM = '|'
 
 def rebase(args):
@@ -101,6 +102,8 @@ def mergeHistory(changesets):
         else:
             last = Group(cs)
             groups.append(last)
+    for group in groups:
+        group.fixComment()
     return groups
 
 def commit(list):
@@ -123,6 +126,9 @@ class Group:
     def append(self, cs):
         self.date = cs.date
         self.files.append(cs)
+    def fixComment(self):
+        self.comment = cc.getRealComment(self.comment)
+        self.subject = self.comment.split('\n')[0]
     def commit(self):
         def getUserEmail(user):
             return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), mailSuffix)
