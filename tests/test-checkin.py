@@ -10,8 +10,8 @@ class CheckinTest(TestCaseEx):
         self.expectedExec.append((['cleartool', 'update', '.'], ''))
         self.commits = []
     def checkin(self):
-        self.expectedExec.insert(1, \
-            (['git', 'log', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CC_TAG], '\n'.join(self.commits)), \
+        self.expectedExec.insert(1,
+            (['git', 'log', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CC_TAG], '\n'.join(self.commits)),
         )
         checkin.checkin([])
         self.assert_(not len(self.expectedExec))
@@ -19,14 +19,14 @@ class CheckinTest(TestCaseEx):
         nameStatus = []
         for type, file in files:
             nameStatus.append('%s\0%s' % (type, file))
-        self.expectedExec.extend([\
-            (['git', 'diff', '--name-status', '-M', '-z', '%s^..%s' % (commit, commit)], '\n'.join(nameStatus)), \
+        self.expectedExec.extend([
+            (['git', 'diff', '--name-status', '-M', '-z', '%s^..%s' % (commit, commit)], '\n'.join(nameStatus)),
         ])
         types = {'M': MockModfy, 'A': MockAdd, 'D': MockDelete, 'R': MockRename}
         for type, file in files:
             types[type](self.expectedExec, commit, message, file)
-        self.expectedExec.extend([\
-            (['git', 'tag', '-f', CC_TAG, commit], ''), \
+        self.expectedExec.extend([
+            (['git', 'tag', '-f', CC_TAG, commit], ''),
         ])
         self.commits.extend([commit, message, ''])
     def testEmpty(self):
@@ -53,9 +53,9 @@ class MockStatus:
         return (['git', 'ls-tree', '-z', id, file], '100644 blob %s %s' % (hash, file))
     def catFile(self, file, hash):
         blob = "blob"
-        return [\
-            (['git', 'cat-file', 'blob', hash], blob), \
-            (join(CC_DIR, file), blob), \
+        return [
+            (['git', 'cat-file', 'blob', hash], blob),
+            (join(CC_DIR, file), blob),
         ]
     def hash(self, file):
         hash1 = 'hash1'
@@ -103,10 +103,10 @@ class MockAdd(MockStatus):
 class MockDelete(MockStatus):
     def __init__(self, e, commit, message, file):
         dir = file[0:file.rfind('/')]
-        e.extend([\
-            self.co(dir), \
-            (['cleartool', 'rm', file], ''), \
-            self.ci(message, dir), \
+        e.extend([
+            self.co(dir),
+            (['cleartool', 'rm', file], ''),
+            self.ci(message, dir),
         ])
 
 class MockRename(MockStatus):
