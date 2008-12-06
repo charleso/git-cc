@@ -66,7 +66,7 @@ class MockStatus:
     def co(self, file):
         return (['cleartool', 'co', '-reserved', '-nc', file], '')
     def ci(self, message, file):
-        return (['cleartool', 'ci', '-c', message, file], '')
+        return (['cleartool', 'ci', '-identical', '-c', message, file], '')
     def mkelem(self, file):
         return (['cleartool', 'mkelem', '-nc', '-eltype', 'directory', abspath(file)], '')
     def dir(self, file):
@@ -79,7 +79,7 @@ class MockModfy(MockStatus):
         e.extend(self.hash(file))
         e.append(self.lsTree(commit, file, hash2))
         e.extend(self.catFile(file, hash2))
-        e.append((['cleartool', 'ci', '-c', message, file], ''))
+        e.append(self.ci(message, file))
 
 class MockAdd(MockStatus):
     def __init__(self, e, commit, message, file):

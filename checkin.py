@@ -92,6 +92,5 @@ class Transaction:
         cc.rmactivity()
     def commit(self, comment):
         for file in self.checkedout:
-            cc_exec(['ci', '-c', comment, file])
+            cc_exec(['ci', '-identical', '-c', comment, file])
         cc.commit()
-        # TODO self.rollback()
