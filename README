@@ -95,14 +95,7 @@ therefore also used to select which commits need to be checked into clearcase.
 Problems
 ========
 
-The first problem I struggled over is the one of syncing your changes with
-clearcase. Sure, I can get them into clearcase easily enough, but when it comes
-time to rebase again the timestamp is too old and so you (keep) picking up your
-own changes, until someone else checks in. This isn't a big problem as the files
-aren't modified so git does nothing. I could blow each change away as I commit,
-and then rebase, but ideally the git working directory remain untouched.
-
-The other problem is renames where no content is changed. Clearcase's
+The big problem is renames, where no content is changed. Clearcase's
 lshistory doesn't tell you about renames and so I will (eventually) have to
 work out what files have been added/removed and manually copy files that are not
 modified. It's not that hard, but it is quite complicated for something so

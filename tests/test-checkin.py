@@ -2,7 +2,7 @@ from __init__ import *
 import checkin, common
 import unittest, os
 from os.path import join, abspath
-from common import CC_DIR, CC_TAG
+from common import CC_DIR, CI_TAG
 
 class CheckinTest(TestCaseEx):
     def setUp(self):
@@ -11,7 +11,7 @@ class CheckinTest(TestCaseEx):
         self.commits = []
     def checkin(self):
         self.expectedExec.insert(1,
-            (['git', 'log', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CC_TAG], '\n'.join(self.commits)),
+            (['git', 'log', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CI_TAG], '\n'.join(self.commits)),
         )
         checkin.checkin([])
         self.assert_(not len(self.expectedExec))
@@ -26,7 +26,7 @@ class CheckinTest(TestCaseEx):
         for type, file in files:
             types[type](self.expectedExec, commit, message, file)
         self.expectedExec.extend([
-            (['git', 'tag', '-f', CC_TAG, commit], ''),
+            (['git', 'tag', '-f', CI_TAG, commit], ''),
         ])
         self.commits.extend([commit, message, ''])
     def testEmpty(self):
@@ -61,7 +61,7 @@ class MockStatus:
         hash1 = 'hash1'
         return [
             (['git', 'hash-object', join(CC_DIR, file)], hash1 + '\n'),
-            self.lsTree(CC_TAG, file, hash1),
+            self.lsTree(CI_TAG, file, hash1),
         ]
     def co(self, file):
         return (['cleartool', 'co', '-reserved', '-nc', file], '')

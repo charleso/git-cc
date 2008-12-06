@@ -4,6 +4,7 @@ from os.path import join, exists, abspath, dirname
 from ConfigParser import SafeConfigParser
 
 CC_TAG = 'clearcase'
+CI_TAG = 'clearcase_ci'
 CFG_CC = 'clearcase'
 CC_DIR = None
 
@@ -33,8 +34,8 @@ def popen(exe, cmd, cwd, env=None):
     debug(cmd)
     return Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
 
-def tag(id="HEAD"):
-    git_exec(['tag', '-f', CC_TAG, id])
+def tag(tag, id="HEAD"):
+    git_exec(['tag', '-f', tag, id])
 
 def reset(tag=CC_TAG):
     git_exec(['reset', '--hard', tag])

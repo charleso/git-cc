@@ -8,7 +8,7 @@ from os.path import isdir, abspath
 def checkin(args):
     cc_exec(['update', '.'])
     cc.update()
-    log = git_exec(['log', '--reverse', '--pretty=format:%H%n%s%n%b', CC_TAG + '..'])
+    log = git_exec(['log', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
     comment = []
     id = None
     def _commit():
@@ -16,8 +16,7 @@ def checkin(args):
             return
         statuses = getStatuses(id)
         checkout(statuses, '\n'.join(comment))
-        # TODO We need to do something clever with the time stamp
-        tag(id)
+        tag(CI_TAG, id)
     for line in log.splitlines():
         if line == "":
             _commit()
@@ -77,7 +76,7 @@ class Transaction:
         cc_exec(['co', '-reserved', '-nc', file])
         if not isdir(join(CC_DIR, file)):
             ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
-            gitid = getBlob(CC_TAG, file)
+            gitid = getBlob(CI_TAG, file)
             if ccid != gitid:
                 raise Exception('File has been modified: %s. Try rebasing.' % file)
     def mkdirelem(self, file):

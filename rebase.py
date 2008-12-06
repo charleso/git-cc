@@ -34,14 +34,23 @@ def loadHistory(history, dryrun=False, stash=False):
     doStash(lambda: doCommit(cs), stash)
 
 def doCommit(cs):
-    id = git_exec(['log', '--pretty=format:%H', '-n', '1'])
-    reset()
+    branch = getCurrentBranch()
+    git_exec(['checkout', CC_TAG])
     try:
         commit(cs)
     finally:
-        if len(id):
-            reset(id)
-            git_exec(['rebase', CC_TAG])
+        if len(branch):
+            git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
+        tag(CI_TAG, CC_TAG)
+
+def getCurrentBranch():
+    for branch in git_exec(['branch']).split('\n'):
+        if branch.startswith('*'):
+            branch = branch[2:]
+            if branch == '(no branch)':
+                fail("Why aren't you on a branch?")
+            return branch
+    return ""
 
 def getSince():
     date = git_exec(['log', '-n', '1', '--pretty=format:%ai', '%s^..%s' % (CC_TAG, CC_TAG)])
@@ -141,7 +150,7 @@ class Group:
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         git_exec(['commit', '-m', comment], env=env)
-        tag()
+        tag(CC_TAG)
 
 class Changeset(object):
     def __init__(self, split, comment):
