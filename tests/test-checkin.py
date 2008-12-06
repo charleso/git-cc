@@ -22,7 +22,7 @@ class CheckinTest(TestCaseEx):
         self.expectedExec.extend([\
             (['git', 'diff', '--name-status', '-M', '-z', '%s^..%s' % (commit, commit)], '\n'.join(nameStatus)), \
         ])
-        types = {'M': MockModfy, 'A': MockAdd, 'D': MockDelete}
+        types = {'M': MockModfy, 'A': MockAdd, 'D': MockDelete, 'R': MockRename}
         for type, file in files:
             types[type](self.expectedExec, commit, message, file)
         self.expectedExec.extend([\
@@ -43,6 +43,10 @@ class CheckinTest(TestCaseEx):
         os.mkdir(join(CC_DIR, 'd'))
         self.commit('sha4', 'commit4', [('D', 'd/e.py')])
         self.checkin();
+    def testRename(self):
+        os.mkdir(join(CC_DIR, 'a'))
+        self.commit('sha1', 'commit1', [('R', 'a/b.py\0c/d.py')])
+        self.checkin();
 
 class MockStatus:
     def lsTree(self, id, file, hash):
@@ -53,23 +57,29 @@ class MockStatus:
             (['git', 'cat-file', 'blob', hash], blob), \
             (join(CC_DIR, file), blob), \
         ]
+    def hash(self, file):
+        hash1 = 'hash1'
+        return [
+            (['git', 'hash-object', join(CC_DIR, file)], hash1 + '\n'),
+            self.lsTree(CC_TAG, file, hash1),
+        ]
     def co(self, file):
         return (['cleartool', 'co', '-reserved', '-nc', file], '')
     def ci(self, message, file):
         return (['cleartool', 'ci', '-c', message, file], '')
+    def mkelem(self, file):
+        return (['cleartool', 'mkelem', '-nc', '-eltype', 'directory', abspath(file)], '')
+    def dir(self, file):
+        return file[0:file.rfind('/')];
 
 class MockModfy(MockStatus):
-    def __init__(self, expectedExec, commit, message, file):
-        hash1 = "hash1"
+    def __init__(self, e, commit, message, file):
         hash2 = "hash2"
-        expectedExec.extend([\
-            self.co(file), \
-            (['git', 'hash-object', join(CC_DIR, file)], hash1 + '\n'), \
-            self.lsTree(CC_TAG, file, hash1), \
-            self.lsTree(commit, file, hash2), \
-        ])
-        expectedExec.extend(self.catFile(file, hash2))
-        expectedExec.append((['cleartool', 'ci', '-c', message, file], ''))
+        e.append(self.co(file))
+        e.extend(self.hash(file))
+        e.append(self.lsTree(commit, file, hash2))
+        e.extend(self.catFile(file, hash2))
+        e.append((['cleartool', 'ci', '-c', message, file], ''))
 
 class MockAdd(MockStatus):
     def __init__(self, e, commit, message, file):
@@ -82,7 +92,7 @@ class MockAdd(MockStatus):
             path = path + f + '/'
             f = join(CC_DIR, path[0:-1])
             files.append(f)
-            e.append((['cleartool', 'mkelem', '-nc', '-eltype', 'directory', abspath(f)], ''))
+            e.append(self.mkelem(f))
         e.append(self.lsTree(commit, file, hash))
         e.extend(self.catFile(file, hash))
         e.append((['cleartool', 'mkelem', '-nc', file], ''))
@@ -97,6 +107,29 @@ class MockDelete(MockStatus):
             self.co(dir), \
             (['cleartool', 'rm', file], ''), \
             self.ci(message, dir), \
+        ])
+
+class MockRename(MockStatus):
+    def __init__(self, e, commit, message, file):
+        a, b = file.split('\0')
+        hash = 'hash'
+        e.extend([
+            self.co(self.dir(a)),
+            self.co(a),
+        ])
+        e.extend(self.hash(a))
+        e.extend([
+            self.co(CC_DIR),
+            self.mkelem(self.dir(join(CC_DIR, b))),
+            (['cleartool', 'mv', '-nc', a, b], ''),
+            self.lsTree(commit, b, hash),
+        ])
+        e.extend(self.catFile(b, hash))
+        e.extend([
+            self.ci(message, self.dir(a)),
+            self.ci(message, CC_DIR),
+            self.ci(message, join(CC_DIR, self.dir(b))),
+            self.ci(message, b),
         ])
 
 if __name__ == "__main__":
