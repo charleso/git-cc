@@ -41,6 +41,8 @@ def doCommit(cs):
     finally:
         if len(branch):
             git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
+        else:
+            git_exec(['checkout', '-b', CC_TAG])
         tag(CI_TAG, CC_TAG)
 
 def getCurrentBranch():
@@ -150,7 +152,6 @@ class Group:
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         git_exec(['commit', '-m', comment], env=env)
-        tag(CC_TAG)
 
 class Changeset(object):
     def __init__(self, split, comment):
