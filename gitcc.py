@@ -1,5 +1,5 @@
 import sys
-import rebase, checkin, init, load, lshistory, sync
+import rebase, checkin, init, load, lshistory, sync, reset
 
 def main():
     args = sys.argv[1:]
@@ -13,6 +13,7 @@ def main():
         'load': load.load,\
         'lshistory': lshistory.lshistory,\
         'sync': sync.sync,\
+        'reset': reset.reset,\
     }
     commands[args[0]](args[1:])
 
@@ -24,6 +25,7 @@ def usage():
     lshistory   Perform lshistory with correct format for snapshot
     load        Load history from snapshot file
     checkin     Checkin new git changesets to Clearcase
+    reset       Reset hard to a specific changeset
     sync        Copy symlinked files from Clearcase to Git manually"""
     sys.exit(2)
 
