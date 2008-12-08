@@ -87,7 +87,7 @@ def parseHistory(lines):
         cstype = split[0]
         if cstype in TYPES:
             cs = TYPES[cstype](split, comment)
-            if filterBranches(cs.version) and cs.valid():
+            if filterBranches(cs.version):
                 changesets.append(cs)
     last = None
     comment = None
@@ -171,25 +171,14 @@ class Changeset(object):
         else:
             os.chmod(toFile, stat.S_IWRITE)
         git_exec(['add', self.file])
-    def valid(self):
-        return True
 
 class Uncataloged(Changeset):
-    def __init__(self, split, comment):
-        super(Uncataloged, self).__init__(split, comment)
-        self.removed = []
-        for file in comment.split('\n'):
-            if file.startswith('Uncataloged'):
-                i = file.find('"')
-                file = file[i+1:-2]
-                file = join(self.file, file)
-                if exists(join(GIT_DIR, file)):
-                    self.removed.append(file)
     def add(self):
-        for rm in self.removed:
-            git_exec(['rm', rm])
-    def valid(self):
-        return len(self.removed) > 0
+        diff = cc_exec(['diff', '-diff_format', '-pred', '%s@@%s' % (self.file, self.version)])
+        for line in diff.split('\n'):
+            if line.startswith('<'):
+                file = line[2:line.find('  --')]
+                git_exec(['rm', join(self.file, file)])
 
 TYPES = {\
     'checkinversion': Changeset,\
