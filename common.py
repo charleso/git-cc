@@ -20,7 +20,7 @@ def doStash(f, stash):
         git_exec(['stash', 'pop'])
 
 def debug(string):
-    if(DEBUG):
+    if DEBUG:
         print string
 
 def git_exec(cmd, env=None):
@@ -31,7 +31,8 @@ def cc_exec(cmd):
 
 def popen(exe, cmd, cwd, env=None):
     cmd.insert(0, exe)
-    debug(cmd)
+    if DEBUG:
+        debug('> ' + ' '.join(cmd))
     return Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
 
 def tag(tag, id="HEAD"):
