@@ -32,6 +32,6 @@ class UCM:
     def getCommentFmt(self):
         return '%[activity]p'
     def getRealComment(self, activity):
-        return cc_exec(['lsactivity', '-fmt', '%[headline]p', activity])
+        return cc_exec(['lsactivity', '-fmt', '%[headline]p', activity]) if activity else activity
 
 cc = (UCM if cfg.get('type') == 'UCM' else Clearcase)();
