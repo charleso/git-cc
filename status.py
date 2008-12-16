@@ -6,14 +6,13 @@ class Status:
         self.setFile(files[0])
     def setFile(self, file):
         self.file = file
-        self.ccfile = join(CC_DIR, self.file)
     def cat(self):
         blob = git_exec(['cat-file', 'blob', getBlob(self.id, self.file)])
-        write(self.ccfile, blob)
+        write(join(CC_DIR, self.file), blob)
     def stageDirs(self, t):
-        dir = dirname(self.ccfile)
+        dir = dirname(self.file)
         dirs = []
-        while not exists(dir):
+        while not exists(join(CC_DIR, dir)):
             dirs.append(dir)
             dir = dirname(dir)
         self.dirs = dirs

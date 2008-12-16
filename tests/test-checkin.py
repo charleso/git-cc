@@ -1,7 +1,7 @@
 from __init__ import *
 import checkin, common
 import unittest, os
-from os.path import join, abspath
+from os.path import join
 from common import CC_DIR, CI_TAG
 
 class CheckinTest(TestCaseEx):
@@ -68,7 +68,7 @@ class MockStatus:
     def ci(self, message, file):
         return (['cleartool', 'ci', '-identical', '-c', message, file], '')
     def mkelem(self, file):
-        return (['cleartool', 'mkelem', '-nc', '-eltype', 'directory', abspath(file)], '')
+        return (['cleartool', 'mkelem', '-nc', '-eltype', 'directory', file], '')
     def dir(self, file):
         return file[0:file.rfind('/')];
 
@@ -85,17 +85,17 @@ class MockAdd(MockStatus):
     def __init__(self, e, commit, message, file):
         hash = 'hash'
         files = []
-        files.append(CC_DIR)
-        e.append(self.co(CC_DIR))
+        files.append(".")
+        e.append(self.co("."))
         path = ""
         for f in file.split('/')[0:-1]:
             path = path + f + '/'
-            f = join(CC_DIR, path[0:-1])
+            f = path[0:-1]
             files.append(f)
             e.append(self.mkelem(f))
         e.append(self.lsTree(commit, file, hash))
         e.extend(self.catFile(file, hash))
-        e.append((['cleartool', 'mkelem', '-nc', file], ''))
+        e.append((['cleartool', 'mkelem', '-nc', file], '.'))
         for f in files:
             e.append(self.ci(message, f))
         e.append(self.ci(message, file))
@@ -119,16 +119,16 @@ class MockRename(MockStatus):
         ])
         e.extend(self.hash(a))
         e.extend([
-            self.co(CC_DIR),
-            self.mkelem(self.dir(join(CC_DIR, b))),
-            (['cleartool', 'mv', '-nc', a, b], ''),
+            self.co("."),
+            self.mkelem(self.dir(b)),
+            (['cleartool', 'mv', '-nc', a, b], '.'),
             self.lsTree(commit, b, hash),
         ])
         e.extend(self.catFile(b, hash))
         e.extend([
             self.ci(message, self.dir(a)),
-            self.ci(message, CC_DIR),
-            self.ci(message, join(CC_DIR, self.dir(b))),
+            self.ci(message, "."),
+            self.ci(message, self.dir(b)),
             self.ci(message, b),
         ])
 

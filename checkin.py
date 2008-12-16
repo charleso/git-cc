@@ -3,7 +3,7 @@ from clearcase import cc
 from status import Modify, Add, Delete, Rename
 import filecmp
 from os import listdir
-from os.path import isdir, abspath
+from os.path import isdir
 
 def checkin(args):
     cc_exec(['update', '.'])
@@ -71,6 +71,7 @@ class Transaction:
         self.checkedout.append(file)
         return True
     def stage(self, file):
+        file = file if file else '.'
         if not self._add(file):
             return
         cc_exec(['co', '-reserved', '-nc', file])
@@ -80,7 +81,7 @@ class Transaction:
             if ccid != gitid:
                 raise Exception('File has been modified: %s. Try rebasing.' % file)
     def mkdirelem(self, file):
-        cc_exec(['mkelem', '-nc', '-eltype', 'directory', abspath(file)])
+        cc_exec(['mkelem', '-nc', '-eltype', 'directory', file])
         self._add(file)
     def mkelem(self, file):
         cc_exec(['mkelem', '-nc', file])
