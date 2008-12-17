@@ -16,11 +16,12 @@ class Status:
             dirs.append(dir)
             dir = dirname(dir)
         self.dirs = dirs
-        t.stage(dir)
+        t.stageDir(dir)
     def commitDirs(self, t):
         while len(self.dirs) > 0:
             dir = self.dirs.pop();
-            t.mkdirelem(dir)
+            cc_exec(['mkelem', '-nc', '-eltype', 'directory', dir])
+            t.add(dir)
 
 class Modify(Status):
     def stage(self, t):
@@ -34,11 +35,12 @@ class Add(Status):
     def commit(self, t):
         self.commitDirs(t)
         self.cat()
-        t.mkelem(self.file)
+        cc_exec(['mkelem', '-nc', self.file])
+        t.add(self.file)
 
 class Delete(Status):
     def stage(self, t):
-        t.stage(dirname(self.file))
+        t.stageDir(dirname(self.file))
     def commit(self, t):
         # TODO Empty dirs?!?
         cc_exec(['rm', self.file])
@@ -49,12 +51,12 @@ class Rename(Status):
         self.new = files[1]
         self.setFile(self.new)
     def stage(self, t):
-        t.stage(dirname(self.old))
+        t.stageDir(dirname(self.old))
         t.stage(self.old)
         self.stageDirs(t)
     def commit(self, t):
         self.commitDirs(t)
         cc_exec(['mv', '-nc', self.old, self.new])
         t.checkedout.remove(self.old)
-        t._add(self.new)
+        t.add(self.new)
         self.cat()

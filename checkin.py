@@ -66,28 +66,21 @@ class Transaction:
     def __init__(self, comment):
         self.checkedout = []
         cc.mkact(comment)
-    def _add(self, file):
-        if file in self.checkedout:
-            debug("File already staged %s" % file)
-            return False
+    def add(self, file):
         self.checkedout.append(file)
-        return True
-    def stage(self, file):
-        file = file if file else '.'
-        if not self._add(file):
-            return
+    def co(self, file):
         cc_exec(['co', '-reserved', '-nc', file])
-        if not isdir(join(CC_DIR, file)):
-            ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
-            gitid = getBlob(CI_TAG, file)
-            if ccid != gitid:
-                raise Exception('File has been modified: %s. Try rebasing.' % file)
-    def mkdirelem(self, file):
-        cc_exec(['mkelem', '-nc', '-eltype', 'directory', file])
-        self._add(file)
-    def mkelem(self, file):
-        cc_exec(['mkelem', '-nc', file])
-        self._add(file)
+        self.add(file)
+    def stageDir(self, file):
+        file = file if file else '.'
+        if file not in self.checkedout:
+            self.co(file)
+    def stage(self, file):
+        self.co(file)
+        ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
+        gitid = getBlob(CI_TAG, file)
+        if ccid != gitid:
+            raise Exception('File has been modified: %s. Try rebasing.' % file)
     def rollback(self):
         for file in self.checkedout:
             cc_exec(['unco', '-rm', file])
