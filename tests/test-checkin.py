@@ -13,7 +13,7 @@ class CheckinTest(TestCaseEx):
         self.expectedExec.insert(1,
             (['git', 'log', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CI_TAG], '\n'.join(self.commits)),
         )
-        checkin.main([])
+        checkin.main()
         self.assert_(not len(self.expectedExec))
     def commit(self, commit, message, files):
         nameStatus = []

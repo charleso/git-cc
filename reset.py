@@ -2,7 +2,7 @@
 
 from common import *
 
-def main(args):
-    git_exec(['reset', '--hard', args[0]])
+def main(commit):
+    git_exec(['reset', '--hard', commit])
     git_exec(['branch', '-f', CC_TAG])
     tag(CI_TAG)

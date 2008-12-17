@@ -16,24 +16,32 @@ Things remaining:
 CC_LSH = ['lsh', '-fmt', '%o%m|%d|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
 DELIM = '|'
 
-def main(args):
-    dryrun = '--dry-run' in args
-    stash = '--stash' in args
-    if not (dryrun or stash):
+ARGS = {
+    'stash': 'Wraps the rebase in a stash to avoid file changes being lost',
+    'dry_run': 'Prints a list of changesets to be imported',
+    'lshistory': 'Prints the raw output of lshistory to be cached for load',
+    'load': 'Loads the contents of a previously saved lshistory file',
+}
+
+def main(stash=False, dry_run=False, lshistory=False, load=None):
+    if not (stash or dry_run or lshistory):
         checkPristine()
     since = getSince()
-    history = getHistory(since)
-    loadHistory(history, dryrun, stash)
-
-def loadHistory(history, dryrun=False, stash=False):
-    cs = parseHistory(history)
-    cs.sort(lambda x, y: cmp(x.date, y.date))
-    cs = mergeHistory(cs)
-    if dryrun:
-        return printGroups(cs)
-    if not len(cs):
-        return
-    doStash(lambda: doCommit(cs), stash)
+    if load:
+        history = open(load, 'r').read()
+    else:
+        history = getHistory(since)
+    if lshistory:
+        print history
+    else:
+        cs = parseHistory(history)
+        cs.sort(lambda x, y: cmp(x.date, y.date))
+        cs = mergeHistory(cs)
+        if dry_run:
+            return printGroups(cs)
+        if not len(cs):
+            return
+        doStash(lambda: doCommit(cs), stash)
 
 def doCommit(cs):
     branch = getCurrentBranch()
