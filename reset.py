@@ -1,3 +1,5 @@
+"""Reset hard to a specific changeset"""
+
 from common import *
 
 def main(args):

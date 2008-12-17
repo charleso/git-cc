@@ -1,3 +1,5 @@
+"""Load history from snapshot file"""
+
 import rebase
 
 def main(args):

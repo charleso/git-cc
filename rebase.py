@@ -1,3 +1,5 @@
+"""Rebase from Clearcase"""
+
 from os.path import join, dirname, exists
 import os, stat
 from common import *

@@ -1,3 +1,5 @@
+"""Copy symlinked files from Clearcase to Git manually"""
+
 from common import *
 import os, shutil, stat
 from os.path import join, abspath

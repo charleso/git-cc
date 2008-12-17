@@ -1,3 +1,5 @@
+"""Checkin new git changesets to Clearcase"""
+
 from common import *
 from clearcase import cc
 from status import Modify, Add, Delete, Rename
