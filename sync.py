@@ -3,7 +3,7 @@ import os, shutil, stat
 from os.path import join, abspath
 from fnmatch import fnmatch
 
-def sync(args):
+def main(args):
     base = abspath(CC_DIR)
     for i in cfg.getList('include', '.'):
         for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):

@@ -14,7 +14,7 @@ Things remaining:
 CC_LSH = ['lsh', '-fmt', '%o%m|%d|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
 DELIM = '|'
 
-def rebase(args):
+def main(args):
     dryrun = '--dry-run' in args
     stash = '--stash' in args
     if not (dryrun or stash):

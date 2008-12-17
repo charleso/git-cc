@@ -2,21 +2,16 @@
 import sys
 import rebase, checkin, init, load, lshistory, sync, reset
 
+commands = [
+    init, rebase, checkin, load, lshistory, sync, reset
+]
+
 def main():
     args = sys.argv[1:]
-    if len(args) == 0:
-        usage()
-    
-    commands = {\
-        'init': init.init,\
-        'rebase': rebase.rebase,\
-        'checkin': checkin.checkin,\
-        'load': load.load,\
-        'lshistory': lshistory.lshistory,\
-        'sync': sync.sync,\
-        'reset': reset.reset,\
-    }
-    commands[args[0]](args[1:])
+    for cmd in commands:
+        if args and cmd.__name__ == args[0]:
+            return cmd.main(args[1:])
+    usage()
 
 def usage():
     print """usage: gitc COMMAND [ARGS]

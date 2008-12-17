@@ -2,7 +2,7 @@ from common import *
 from os import open
 from os.path import join, exists
 
-def init(args):
+def main(args):
     if not exists(join(GIT_DIR, '.git')):
         git_exec(['init'])
         excludes = """*.class

@@ -5,7 +5,7 @@ import filecmp
 from os import listdir
 from os.path import isdir
 
-def checkin(args):
+def main(args):
     cc_exec(['update', '.'])
     cc.update()
     log = git_exec(['log', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])

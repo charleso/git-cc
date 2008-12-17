@@ -1,4 +1,4 @@
 import rebase
 
-def load(args):
+def main(args):
     rebase.loadHistory(open(args[0], 'r').read())
