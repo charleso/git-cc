@@ -7,6 +7,7 @@ from os.path import join, exists
 def main(ccdir):
     if not exists(join(GIT_DIR, '.git')):
         git_exec(['init'])
+        git_exec(['config', 'core.autocrlf', 'false'])
         excludes = """*.class
 *.jar
 """
