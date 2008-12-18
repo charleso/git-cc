@@ -65,7 +65,7 @@ def getCurrentBranch():
     return ""
 
 def getSince():
-    date = git_exec(['log', '-n', '1', '--pretty=format:%ai', '%s^..%s' % (CC_TAG, CC_TAG)])
+    date = git_exec(['log', '-n', '1', '--pretty=format:%ai', '%s' % CC_TAG])
     if len(date) == 0:
         return cfg.get('since')
     date = date[:19]
