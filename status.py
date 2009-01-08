@@ -20,8 +20,9 @@ class Status:
     def commitDirs(self, t):
         while len(self.dirs) > 0:
             dir = self.dirs.pop();
-            cc_exec(['mkelem', '-nc', '-eltype', 'directory', dir])
-            t.add(dir)
+            if not exists(join(CC_DIR, dir)):
+                cc_exec(['mkelem', '-nc', '-eltype', 'directory', dir])
+                t.add(dir)
 
 class Modify(Status):
     def stage(self, t):
