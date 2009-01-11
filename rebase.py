@@ -30,6 +30,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
     if load:
         history = open(load, 'r').read()
     else:
+        cc.rebase()
         history = getHistory(since)
     if lshistory:
         print history

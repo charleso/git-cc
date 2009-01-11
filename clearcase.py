@@ -1,6 +1,8 @@
 from common import *
 
 class Clearcase:
+    def rebase(self):
+        pass
     def mkact(self, comment):
         pass
     def rmactivity(self):
@@ -13,9 +15,11 @@ class Clearcase:
         return comment
 
 class UCM:
-    def mkact(self, comment):
+    def rebase(self):
         debug(cc_exec(['rebase', '-rec', '-f']))
         debug(cc_exec(['rebase', '-complete']))
+    def mkact(self, comment):
+        self.rebase()
         comment = cc_exec(['mkact', '-f', '-headline', comment])
         comment = comment.split('\n')[0]
         self.activity = comment[comment.find('"')+1:comment.rfind('"')]
