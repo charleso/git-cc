@@ -33,10 +33,10 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         cc.rebase()
         history = getHistory(since)
     if lshistory:
-        print history
+        print(history)
     else:
         cs = parseHistory(history)
-        cs.sort(lambda x, y: cmp(x.date, y.date))
+        cs.sort(key = lambda x: x.date)
         cs = mergeHistory(cs)
         if dry_run:
             return printGroups(cs)
@@ -134,9 +134,9 @@ def commit(list):
 
 def printGroups(groups):
     for cs in groups:
-        print cs.user, '"%s"' % cs.subject
+        print(cs.user, '"%s"' % cs.subject)
         for file in cs.files:
-            print "  %s" % file.file
+            print("  %s" % file.file)
 
 class Group:
     def __init__(self, cs):

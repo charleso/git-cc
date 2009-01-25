@@ -1,7 +1,13 @@
+from distutils import __version__
+v30 = __version__.find("3.") == 0
+
 from subprocess import Popen, PIPE
 import os, sys
 from os.path import join, exists, abspath, dirname
-from ConfigParser import SafeConfigParser
+if v30:
+    from configparser import SafeConfigParser
+else:
+    from ConfigParser import SafeConfigParser
 
 CC_TAG = 'clearcase'
 CI_TAG = 'clearcase_ci'
@@ -9,7 +15,7 @@ CFG_CC = 'clearcase'
 CC_DIR = None
 
 def fail(string):
-    print string
+    print(string)
     sys.exit(2)
 
 def doStash(f, stash):
@@ -21,7 +27,7 @@ def doStash(f, stash):
 
 def debug(string):
     if DEBUG:
-        print string
+        print(string)
 
 def git_exec(cmd, env=None):
     return popen('git', cmd, GIT_DIR, env=env)
@@ -33,7 +39,9 @@ def popen(exe, cmd, cwd, env=None):
     cmd.insert(0, exe)
     if DEBUG:
         debug('> ' + ' '.join(cmd))
-    return Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
+    input = Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
+    input = input.decode()
+    return input if v30 else str(input)
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
