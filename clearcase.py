@@ -16,8 +16,10 @@ class Clearcase:
 
 class UCM:
     def rebase(self):
-        debug(cc_exec(['rebase', '-rec', '-f']))
-        debug(cc_exec(['rebase', '-complete']))
+        out = cc_exec(['rebase', '-rec', '-f'])
+        if not out.startswith('No rebase needed'):
+            debug(out)
+            debug(cc_exec(['rebase', '-complete']))
     def mkact(self, comment):
         self.rebase()
         comment = cc_exec(['mkact', '-f', '-headline', comment])
