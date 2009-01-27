@@ -29,19 +29,21 @@ def debug(string):
     if DEBUG:
         print(string)
 
-def git_exec(cmd, env=None):
-    return popen('git', cmd, GIT_DIR, env=env)
+def git_exec(cmd, **args):
+    return popen('git', cmd, GIT_DIR, **args)
 
 def cc_exec(cmd):
     return popen('cleartool', cmd, CC_DIR)
 
-def popen(exe, cmd, cwd, env=None):
+def popen(exe, cmd, cwd, env=None, decode=True):
     cmd.insert(0, exe)
     if DEBUG:
         debug('> ' + ' '.join(cmd))
     input = Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
-    input = input.decode()
-    return input if v30 else str(input)
+    if decode:
+        input = input.decode()
+        input = input if v30 else str(input)
+    return input
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
