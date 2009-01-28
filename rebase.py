@@ -188,8 +188,8 @@ class Uncataloged(Changeset):
         diff = cc_exec(['diff', '-diff_format', '-pred', '%s@@%s' % (self.file, self.version)])
         for line in diff.split('\n'):
             if line.startswith('<'):
-                file = line[2:line.find('  --')]
-                git_exec(['rm', join(self.file, file)])
+                file = line[2:line.find(' --') - 1]
+                git_exec(['rm', '-r', join(self.file, file)])
 
 TYPES = {\
     'checkinversion': Changeset,\
