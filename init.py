@@ -11,6 +11,6 @@ def main(ccdir):
         excludes = """*.class
 *.jar
 """
-        write(join(GIT_DIR, '.git', 'info', 'exclude'), excludes)
+        write(join(GIT_DIR, '.git', 'info', 'exclude'), excludes.encode())
     cfg.set(CFG_CC, ccdir)
     cfg.write()
