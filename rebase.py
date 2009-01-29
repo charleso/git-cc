@@ -158,7 +158,8 @@ class Group:
             file.add()
         env = {}
         user = users.get(self.user, self.user)
-        env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = self.date
+        user = str(url)
+        env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(self.date)
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = user
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"

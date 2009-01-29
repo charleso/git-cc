@@ -13,6 +13,7 @@ CC_TAG = 'clearcase'
 CI_TAG = 'clearcase_ci'
 CFG_CC = 'clearcase'
 CC_DIR = None
+ENCODING = sys.stdin.encoding
 
 def fail(string):
     print(string)
@@ -40,10 +41,7 @@ def popen(exe, cmd, cwd, env=None, decode=True):
     if DEBUG:
         debug('> ' + ' '.join(cmd))
     input = Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
-    if decode:
-        input = input.decode()
-        input = input if v30 else str(input)
-    return input
+    return input if not decode else input.decode(ENCODING)
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
