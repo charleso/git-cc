@@ -158,7 +158,7 @@ class Group:
             file.add()
         env = {}
         user = users.get(self.user, self.user)
-        user = str(url)
+        user = str(user)
         env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(self.date)
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = user
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
