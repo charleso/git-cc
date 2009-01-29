@@ -78,6 +78,24 @@ any activity information. This is largely for convenience for me so I don't have
 to rewrite everything. Therefore things like 'recommended' baselines are ignored.
 I don't know if this will cause any major dramas or not.
 
+Troubleshooting
+===============
+
+1. WindowsError: [Error 2] The system cannot find the file specified
+
+You're most likely running gitcc under Windows Cmd. At moment this isn't
+supported. Instead use Git Bash, which is a better console anyway. :-)
+
+2. cleartool: Error: Not an object in a vob: ".".
+
+The Clearcase directory you've specified in init isn't correct. Please note
+that the directory must be inside a VOB, which might be one of the folders
+inside the view you've specified.
+
+3. fatal: ambiguous argument 'clearcase': unknown revision or path not in the working tree.
+
+If this is your first rebase then please ignore this. This is expected.
+
 Behind the scenes
 =================
 
