@@ -134,7 +134,7 @@ def commit(list):
 
 def printGroups(groups):
     for cs in groups:
-        print(cs.user, '"%s"' % cs.subject)
+        print('%s "%s"' % (cs.user, cs.subject))
         for file in cs.files:
             print("  %s" % file.file)
 
