@@ -36,6 +36,14 @@ git commit -m "I don't actually drink coffee"
 gitcc rebase
 gitcc checkin
 
+Initialise (fast):
+
+Rebase can be quite slow initially, and if you just want to get a snapshot of
+Clearcase, without the history, then this is for you:
+
+gitcc init d:/view/xyz
+gitcc update "Initial commit"
+
 Other:
 
 These are two useful flags for rebase which is use quite frequently.
