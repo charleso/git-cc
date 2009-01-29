@@ -1,17 +1,17 @@
-"""Copy symlinked files from Clearcase to Git manually"""
+"""Copy files from Clearcase to Git manually"""
 
 from common import *
 import os, shutil, stat
 from os.path import join, abspath
 from fnmatch import fnmatch
 
-def main():
+def main(glob):
     base = abspath(CC_DIR)
     for i in cfg.getList('include', '.'):
         for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):
             reldir = dirpath[len(base)+1:]
             for file in filenames:
-                if fnmatch(file, '*.jar'):
+                if fnmatch(file, glob):
                     newFile = join(GIT_DIR, reldir, file)
                     debug('Copying %s' % newFile)
                     mkdirs(newFile)
