@@ -31,7 +31,7 @@ def main():
 
 def getStatuses(id):
     status = git_exec(['diff','--name-status', '-M', '-z', '%s^..%s' % (id, id)])
-    types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add}
+    types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add}
     list = []
     split = status.split('\x00')
     while len(split) > 1:
@@ -39,6 +39,8 @@ def getStatuses(id):
         args = [split.pop(0)]
         if char == 'R':
             args.append(split.pop(0))
+        elif char == 'C':
+            args = [split.pop(0)]
         type = types[char](args)
         type.id = id
         list.append(type)
