@@ -15,6 +15,8 @@ class Clearcase:
         return comment
 
 class UCM:
+    def __init__(self):
+        self.activities = {}
     def rebase(self):
         out = cc_exec(['rebase', '-rec', '-f'])
         if not out.startswith('No rebase needed'):
@@ -22,9 +24,14 @@ class UCM:
             debug(cc_exec(['rebase', '-complete']))
     def mkact(self, comment):
         self.rebase()
-        comment = cc_exec(['mkact', '-f', '-headline', comment])
-        comment = comment.split('\n')[0]
-        self.activity = comment[comment.find('"')+1:comment.rfind('"')]
+        self.activity = self._getActivities().get(comment)
+        if self.activity:
+            cc_exec(['setact', self.activity])
+            return
+        _comment = cc_exec(['mkact', '-f', '-headline', comment])
+        _comment = _comment.split('\n')[0]
+        self.activity = _comment[_comment.find('"')+1:_comment.rfind('"')]
+        self._getActivities()[comment] = self.activity
     def rmactivity(self):
         cc_exec(['setact', '-none'])
         cc_exec(['rmactivity', '-f', self.activity])
@@ -36,5 +43,12 @@ class UCM:
         return '%[activity]p'
     def getRealComment(self, activity):
         return cc_exec(['lsactivity', '-fmt', '%[headline]p', activity]) if activity else activity
+    def _getActivities(self):
+        if not self.activities:
+            for line in cc_exec(['lsactivity', '-fmt', '%[headline]p|%n\n']).split('\n'):
+                if line:
+                    line = line.strip().split('|')
+                    self.activities[line[0]] = line[1]
+        return self.activities
 
 cc = (UCM if cfg.get('type') == 'UCM' else Clearcase)();
