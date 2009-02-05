@@ -61,7 +61,8 @@ class MockStatus:
         hash1 = 'hash1'
         return [
             (['git', 'hash-object', join(CC_DIR, file)], hash1 + '\n'),
-            self.lsTree(CI_TAG, file, hash1),
+            (['git', 'merge-base', CI_TAG, 'HEAD'], 'abcdef'),
+            self.lsTree('abcdef', file, hash1),
         ]
     def co(self, file):
         return (['cleartool', 'co', '-reserved', '-nc', file], '')

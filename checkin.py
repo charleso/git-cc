@@ -79,7 +79,7 @@ class Transaction:
     def stage(self, file):
         self.co(file)
         ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
-        gitid = getBlob(CI_TAG, file)
+        gitid = getBlob(git_exec(['merge-base', CI_TAG, 'HEAD']).strip(), file)
         if ccid != gitid:
             raise Exception('File has been modified: %s. Try rebasing.' % file)
     def rollback(self):
