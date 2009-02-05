@@ -13,7 +13,7 @@ class TestCaseEx(unittest.TestCase):
             expected, out = self.expectedExec.pop(0)
             self.assertEquals(expected, actual)
             return out
-        def mockPopen(exe, cmd, cwd, env=None):
+        def mockPopen(exe, cmd, cwd, env=None, **args):
             cmd.insert(0, exe)
             return check(cmd)
         def mockWrite(file, blob):
