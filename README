@@ -121,21 +121,9 @@ therefore also used to select which commits need to be checked into clearcase.
 Problems
 ========
 
-The big problem is renames, where no content is changed. Clearcase's
-lshistory doesn't tell you about renames and so I will (eventually) have to
-work out what files have been added/removed and manually copy files that are not
-modified. It's not that hard, but it is quite complicated for something so
-uncommon, or at least for me where renames almost always require some content
-change. ie Class and package name changes in Java. I had my first straight
-rename today with an image. I manually amended the commit in git, which was
-annoying but simple enough.
-
 It is worth nothing that when initially importing the history from Clearcase
-that renames are not kept, and in fact you don't get the original file until
-the point at which it was renamed to it's _current_ name. This is quite sad
-and means that the imported history is not a true one and so rolling back to
-older revisions will be somewhat limited as it is likely everything won't
-compile. Once you are up-to-date renames will be fine (except for the case above)
-but if you reset your branch to an older changeset and rebase again you'll lose
-the original file. Other Clearcase importers seem restricted by the same problem,
-but none-the-less it is most frustrating. Grr!
+that files not currently in your view (ie deleted) cannot be reached without
+a config spec change. This is quite sad and means that the imported history is
+not a true one and so rolling back to older revisions will be somewhat limited
+as it is likely everything won't compile. Other Clearcase importers seem
+restricted by the same problem, but none-the-less it is most frustrating. Grr!

@@ -1,6 +1,6 @@
 """Rebase from Clearcase"""
 
-from os.path import join, dirname, exists
+from os.path import join, dirname, exists, isdir
 import os, stat
 from common import *
 from datetime import datetime, timedelta
@@ -79,17 +79,17 @@ def getHistory(since):
     lsh.extend(cfg.getList('include', '.'))
     return cc_exec(lsh)
 
+def filterBranches(version):
+    version = version.split('\\')
+    version.pop()
+    version = version[-1]
+    for branch in cfg.getList('branches', 'main'):
+        if fnmatch(version, branch):
+            return True
+    return False
+
 def parseHistory(lines):
     changesets = []
-    branches = cfg.getList('branches', 'main')
-    def filterBranches(version):
-        version = version.split('\\')
-        version.pop()
-        version = version[-1]
-        for branch in branches:
-            if fnmatch(version, branch):
-                return True
-        return False
     def add(split, comment):
         if not split:
             return
@@ -152,8 +152,11 @@ class Group:
     def commit(self):
         def getUserEmail(user):
             return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), mailSuffix)
+        files = []
         for file in self.files:
-            file.add()
+            files.append(file.file)
+        for file in self.files:
+            file.add(files)
         env = {}
         user = users.get(self.user, self.user)
         user = str(user)
@@ -163,6 +166,9 @@ class Group:
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         git_exec(['commit', '-m', comment], env=env)
 
+def cc_file(file, version):
+    return '%s@@%s' % (file, version)
+
 class Changeset(object):
     def __init__(self, split, comment):
         self.date = split[1]
@@ -171,24 +177,39 @@ class Changeset(object):
         self.version = split[4]
         self.comment = comment
         self.subject = comment.split('\n')[0]
-    def add(self):
-        toFile = join(GIT_DIR, self.file)
+    def add(self, files):
+        self._add(self.file, self.version)
+    def _add(self, file, version):
+        toFile = join(GIT_DIR, file)
         mkdirs(toFile)
         removeFile(toFile)
-        cc_exec(['get','-to', toFile, self.file + "@@" + self.version])
+        cc_exec(['get','-to', toFile, cc_file(file, version)])
         if not exists(toFile):
             git_exec(['checkout', 'HEAD', toFile])
         else:
             os.chmod(toFile, stat.S_IWRITE)
-        git_exec(['add', self.file])
+        git_exec(['add', file])
 
 class Uncataloged(Changeset):
-    def add(self):
-        diff = cc_exec(['diff', '-diff_format', '-pred', '%s@@%s' % (self.file, self.version)])
+    def add(self, files):
+        dir = cc_file(self.file, self.version)
+        diff = cc_exec(['diff', '-diff_format', '-pred', dir])
+        def getFile(line):
+            return join(self.file, line[2:line.find(' --') - 1])
         for line in diff.split('\n'):
             if line.startswith('<'):
-                file = line[2:line.find(' --') - 1]
-                git_exec(['rm', '-r', join(self.file, file)])
+                git_exec(['rm', '-r', getFile(line)])
+            elif line.startswith('>'):
+                added = getFile(line)
+                cc_added = join(CC_DIR, added)
+                if not exists(cc_added) or isdir(cc_added) or added in files:
+                    continue
+                history = cc_exec(['lshistory', '-fmt', '%o%m|%d|%Vn\\n', added])
+                date = cc_exec(['describe', '-fmt', '%d', dir])
+                def f(s):
+                    return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2])
+                version = filter(f, map(lambda x: x.split('|'), history.split('\n')))[0][2]
+                self._add(added, version.strip())
 
 TYPES = {\
     'checkinversion': Changeset,\
