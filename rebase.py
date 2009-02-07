@@ -47,14 +47,12 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
 def doCommit(cs):
     branch = getCurrentBranch()
     git_exec(['checkout', CC_TAG])
-    try:
-        commit(cs)
-    finally:
-        if len(branch):
-            git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
-        else:
-            git_exec(['checkout', '-b', CC_TAG])
-        tag(CI_TAG, CC_TAG)
+    commit(cs)
+    if len(branch):
+        git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
+    else:
+        git_exec(['checkout', '-b', CC_TAG])
+    tag(CI_TAG, CC_TAG)
 
 def getCurrentBranch():
     for branch in git_exec(['branch']).split('\n'):
