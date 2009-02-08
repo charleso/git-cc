@@ -11,7 +11,7 @@ class CheckinTest(TestCaseEx):
         self.commits = []
     def checkin(self):
         self.expectedExec.insert(1,
-            (['git', 'log', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CI_TAG], '\n'.join(self.commits)),
+            (['git', 'log', '--first-parent', '--reverse', '--pretty=format:%H%n%s%n%b', '%s..' % CI_TAG], '\n'.join(self.commits)),
         )
         checkin.main()
         self.assert_(not len(self.expectedExec))

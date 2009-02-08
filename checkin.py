@@ -9,7 +9,7 @@ from os.path import isdir
 
 def main():
     cc_exec(['update', '.'])
-    log = git_exec(['log', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
+    log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
     comment = []
     id = None
     def _commit():
