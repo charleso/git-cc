@@ -45,7 +45,7 @@ class UCM:
         return cc_exec(['lsactivity', '-fmt', '%[headline]p', activity]) if activity else activity
     def _getActivities(self):
         if not self.activities:
-            for line in cc_exec(['lsactivity', '-fmt', '%[headline]p|%n\n']).split('\n'):
+            for line in cc_exec(['lsactivity', '-fmt', '%[headline]p|%n\\n']).split('\n'):
                 if line:
                     line = line.strip().split('|')
                     self.activities[line[0]] = line[1]
