@@ -7,7 +7,16 @@ import filecmp
 from os import listdir
 from os.path import isdir
 
-def main():
+IGNORE_CONFLICTS=False
+
+ARGS = {
+    'force': 'ignore conflicts and check-in anyway',
+}
+
+def main(force=False):
+    global IGNORE_CONFLICTS
+    if force:
+        IGNORE_CONFLICTS=True
     cc_exec(['update', '.'])
     log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
     comment = []
@@ -77,11 +86,15 @@ class Transaction:
         if file not in self.checkedout:
             self.co(file)
     def stage(self, file):
+        global IGNORE_CONFLICTS    
         self.co(file)
         ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
         gitid = getBlob(git_exec(['merge-base', CI_TAG, 'HEAD']).strip(), file)
         if ccid != gitid:
-            raise Exception('File has been modified: %s. Try rebasing.' % file)
+            if not IGNORE_CONFLICTS:
+                raise Exception('File has been modified: %s. Try rebasing.' % file)
+            else:
+                print ('WARNING: Detected possible confilct with',file,'...ignoring...')
     def rollback(self):
         for file in self.checkedout:
             cc_exec(['unco', '-rm', file])
