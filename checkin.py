@@ -18,7 +18,7 @@ def main(force=False, no_deliver=False):
     global IGNORE_CONFLICTS
     if force:
         IGNORE_CONFLICTS=True
-    cc_exec(['update', '.'])
+    cc_exec(['update', '.'], errors=False)
     log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
     comment = []
     id = None

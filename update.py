@@ -4,7 +4,7 @@ from common import *
 import sync, reset
 
 def main(message):
-    cc_exec(['update', '.'])
+    cc_exec(['update', '.'], errors=False)
     sync.main('*')
     git_exec(['add', '.'])
     git_exec(['commit', '-m', message])

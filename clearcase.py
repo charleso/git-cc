@@ -34,7 +34,7 @@ class UCM:
         self._getActivities()[comment] = self.activity
     def rmactivity(self):
         cc_exec(['setact', '-none'])
-        cc_exec(['rmactivity', '-f', self.activity])
+        cc_exec(['rmactivity', '-f', self.activity], errors=False)
     def commit(self):
         cc_exec(['setact', '-none'])
         debug(cc_exec(['deliver','-f']))

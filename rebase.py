@@ -46,7 +46,8 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
 
 def doCommit(cs):
     branch = getCurrentBranch()
-    git_exec(['checkout', CC_TAG])
+    if branch:
+        git_exec(['checkout', CC_TAG])
     commit(cs)
     if len(branch):
         git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
@@ -64,13 +65,14 @@ def getCurrentBranch():
     return ""
 
 def getSince():
-    date = git_exec(['log', '-n', '1', '--pretty=format:%ai', '%s' % CC_TAG])
-    if len(date) == 0:
+    try:
+        date = git_exec(['log', '-n', '1', '--pretty=format:%ai', '%s' % CC_TAG])
+        date = date[:19]
+        date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        date = date + timedelta(seconds=1)
+        return datetime.strftime(date, '%d-%b-%Y.%H:%M:%S')
+    except:
         return cfg.get('since')
-    date = date[:19]
-    date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-    date = date + timedelta(seconds=1)
-    return datetime.strftime(date, '%d-%b-%Y.%H:%M:%S')
 
 def getHistory(since):
     lsh = CC_LSH[:]
@@ -164,7 +166,11 @@ class Group:
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = user
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
-        git_exec(['commit', '-m', comment], env=env)
+        try:
+            git_exec(['commit', '-m', comment], env=env)
+        except Exception, [e]:
+            if not e.find('nothing to commit') >= 0:
+                raise
 
 def cc_file(file, version):
     return '%s@@%s' % (file, version)
@@ -188,17 +194,20 @@ class Changeset(object):
             git_exec(['checkout', 'HEAD', toFile])
         else:
             os.chmod(toFile, stat.S_IWRITE)
-        git_exec(['add', file])
+        git_exec(['add', file], errors=False)
 
 class Uncataloged(Changeset):
     def add(self, files):
         dir = cc_file(self.file, self.version)
-        diff = cc_exec(['diff', '-diff_format', '-pred', dir])
+        diff = cc_exec(['diff', '-diff_format', '-pred', dir], errors=False)
         def getFile(line):
             return join(self.file, line[2:line.find(' --') - 1])
         for line in diff.split('\n'):
+            sym = line.find(' -> ')
+            if sym >= 0:
+                continue
             if line.startswith('<'):
-                git_exec(['rm', '-r', getFile(line)])
+                git_exec(['rm', '-r', getFile(line)], errors=False)
             elif line.startswith('>'):
                 added = getFile(line)
                 cc_added = join(CC_DIR, added)

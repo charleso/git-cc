@@ -33,15 +33,18 @@ def debug(string):
 def git_exec(cmd, **args):
     return popen('git', cmd, GIT_DIR, **args)
 
-def cc_exec(cmd):
-    return popen('cleartool', cmd, CC_DIR)
+def cc_exec(cmd, **args):
+    return popen('cleartool', cmd, CC_DIR, **args)
 
-def popen(exe, cmd, cwd, env=None, decode=True):
+def popen(exe, cmd, cwd, env=None, decode=True, errors=True):
     cmd.insert(0, exe)
     if DEBUG:
         debug('> ' + ' '.join(cmd))
-    input = Popen(cmd, cwd=cwd, stdout=PIPE, env=env).stdout.read()
-    return input if not decode else input.decode(ENCODING)
+    pipe = Popen(cmd, cwd=cwd, stdout=PIPE, stderr=PIPE, env=env)
+    (stdout, stderr) = pipe.communicate()
+    if errors and pipe.returncode > 0:
+        raise Exception((stderr + stdout).decode(ENCODING))
+    return stdout if not decode else stdout.decode(ENCODING)
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
