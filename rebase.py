@@ -208,7 +208,7 @@ class Uncataloged(Changeset):
                 date = cc_exec(['describe', '-fmt', '%d', dir])
                 def f(s):
                     return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2])
-                version = filter(f, map(lambda x: x.split('|'), history.split('\n')))[0][2]
+                version = list(filter(f, list(map(lambda x: x.split('|'), history.split('\n')))))[0][2]
                 self._add(added, version.strip())
 
 TYPES = {\
