@@ -55,15 +55,6 @@ def doCommit(cs):
         git_exec(['checkout', '-b', CC_TAG])
     tag(CI_TAG, CC_TAG)
 
-def getCurrentBranch():
-    for branch in git_exec(['branch']).split('\n'):
-        if branch.startswith('*'):
-            branch = branch[2:]
-            if branch == '(no branch)':
-                fail("Why aren't you on a branch?")
-            return branch
-    return ""
-
 def getSince():
     try:
         date = git_exec(['log', '-n', '1', '--pretty=format:%ai', '%s' % CC_TAG])

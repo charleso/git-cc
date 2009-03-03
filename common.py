@@ -64,6 +64,15 @@ def gitDir():
         return findGitDir(dirname(dir))
     return findGitDir(abspath('.'))
 
+def getCurrentBranch():
+    for branch in git_exec(['branch']).split('\n'):
+        if branch.startswith('*'):
+            branch = branch[2:]
+            if branch == '(no branch)':
+                fail("Why aren't you on a branch?")
+            return branch
+    return ""
+
 class GitConfigParser():
     section = 'gitcc'
     def __init__(self):
