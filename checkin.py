@@ -11,9 +11,10 @@ IGNORE_CONFLICTS=False
 
 ARGS = {
     'force': 'ignore conflicts and check-in anyway',
+    'no_deliver': 'do not deliver in UCM mode',
 }
 
-def main(force=False):
+def main(force=False, no_deliver=False):
     global IGNORE_CONFLICTS
     if force:
         IGNORE_CONFLICTS=True
@@ -26,6 +27,8 @@ def main(force=False):
             return
         statuses = getStatuses(id)
         checkout(statuses, '\n'.join(comment))
+        if not no_deliver:
+            cc.commit()
         tag(CI_TAG, id)
     for line in log.splitlines():
         if line == "":
@@ -102,4 +105,3 @@ class Transaction:
     def commit(self, comment):
         for file in self.checkedout:
             cc_exec(['ci', '-identical', '-c', comment, file])
-        cc.commit()
