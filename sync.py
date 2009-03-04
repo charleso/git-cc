@@ -7,7 +7,7 @@ from fnmatch import fnmatch
 
 def main(glob):
     base = abspath(CC_DIR)
-    for i in cfg.getList('include', '.'):
+    for i in cfg.getInclude():
         for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):
             reldir = dirpath[len(base)+1:]
             for file in filenames:

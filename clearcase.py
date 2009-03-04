@@ -50,4 +50,4 @@ class UCM:
                     self.activities[line[0]] = line[1]
         return self.activities
 
-cc = (UCM if cfg.get('type') == 'UCM' else Clearcase)();
+cc = (UCM if cfg.getCore('type') == 'UCM' else Clearcase)();

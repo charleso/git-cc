@@ -27,6 +27,7 @@ Workflow
 
 Initialise:
 
+git init
 gitcc init d:/view/xyz
 gitcc rebase 
 # Get coffee
@@ -63,14 +64,19 @@ You need to add a mapping for each user in your clearcase history to users.py.
 You can also limit which branches and folders you import from.
 eg. .git/gitcc
 
-[gitcc]
-clearcase = D:\views\co4222_flex\rd_poc
+[core]
 include = FolderA|FolderB
-branches = main|ji_dev|ji_*_dev|iteration_*_dev
 debug = False
+type = UCM
+[master]
+clearcase = D:\views\co4222_flex\rd_poc
+branches = main|ji_dev|ji_*_dev|iteration_*_dev
+[sup]
+clearcase = D:\views\co4222_sup\rd_poc
+branches = main|sup
 
-I would have put this in the .git/config file except python didn't seems to like
-reading it.
+In this case there are two separate git branches, master and sup, which
+correspond to different folders/branches in clearcase.
 
 Notes
 =====

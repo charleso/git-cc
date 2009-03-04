@@ -9,11 +9,10 @@ if v30:
 else:
     from ConfigParser import SafeConfigParser
 
-CC_TAG = 'clearcase'
-CI_TAG = 'clearcase_ci'
 CFG_CC = 'clearcase'
 CC_DIR = None
 ENCODING = sys.stdin.encoding
+DEBUG = False
 
 def fail(string):
     print(string)
@@ -49,8 +48,8 @@ def popen(exe, cmd, cwd, env=None, decode=True, errors=True):
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
 
-def reset(tag=CC_TAG):
-    git_exec(['reset', '--hard', tag])
+def reset(tag=None):
+    git_exec(['reset', '--hard', tag or CC_TAG])
 
 def getBlob(sha, file):
     return git_exec(['ls-tree', '-z', sha, file]).split(' ')[2].split('\t')[0]
@@ -74,8 +73,9 @@ def getCurrentBranch():
     return ""
 
 class GitConfigParser():
-    section = 'gitcc'
-    def __init__(self):
+    CORE = 'core'
+    def __init__(self, branch):
+        self.section = branch
         self.file = join(GIT_DIR, '.git', 'gitcc')
         self.parser = SafeConfigParser();
         self.parser.add_section(self.section)
@@ -85,18 +85,18 @@ class GitConfigParser():
         self.parser.read(self.file)
     def write(self):
         self.parser.write(open(self.file, 'w'))
-    def get(self, name, default=None):
-        if not self.parser.has_option(self.section, name):
+    def getCore(self, name, *args):
+        return self._get(self.CORE, name, *args)
+    def get(self, name, *args):
+        return self._get(self.section, name, *args)
+    def _get(self, section, name, default=None):
+        if not self.parser.has_option(section, name):
             return default
-        return self.parser.get(self.section, name)
+        return self.parser.get(section, name)
     def getList(self, name, default=None):
         return self.get(name, default).split('|')
-
-def checkPristine():
-    if not CC_DIR:
-        fail('No .git directory found')
-    if(len(git_exec(['ls-files', '--modified']).splitlines()) > 0):
-        fail('There are uncommitted files in your git directory')
+    def getInclude(self):
+        return self.getCore('include', '.').split('|')
 
 def write(file, blob):
     _write(file, blob)
@@ -116,8 +116,14 @@ def removeFile(file):
         os.remove(file)
 
 GIT_DIR = gitDir()
-cfg = GitConfigParser()
-if exists(join(GIT_DIR, '.git')):
-    cfg.read()
-    CC_DIR = cfg.get(CFG_CC)
-DEBUG = cfg.get('debug', True)
+if not exists(join(GIT_DIR, '.git')):
+    fail("fatal: Not a git repository (or any of the parent directories): .git")
+CURRENT_BRANCH = getCurrentBranch()
+cfg = GitConfigParser(CURRENT_BRANCH)
+cfg.read()
+CC_DIR = cfg.get(CFG_CC)
+if not CC_DIR:
+    fail("No 'clearcase' variable found for branch '%s'" % CURRENT_BRANCH)
+DEBUG = cfg.getCore('debug', True)
+CC_TAG = CURRENT_BRANCH + '_cc'
+CI_TAG = CURRENT_BRANCH + '_ci'

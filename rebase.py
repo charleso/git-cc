@@ -44,15 +44,19 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
             return
         doStash(lambda: doCommit(cs), stash)
 
+def checkPristine():
+    if(len(git_exec(['ls-files', '--modified']).splitlines()) > 0):
+        fail('There are uncommitted files in your git directory')
+
 def doCommit(cs):
-    branch = getCurrentBranch()
+    branch = CURRENT_BRANCH
     if branch:
         git_exec(['checkout', CC_TAG])
     commit(cs)
     if len(branch):
         git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
     else:
-        git_exec(['checkout', '-b', CC_TAG])
+        tag(CC_TAG)
     tag(CI_TAG, CC_TAG)
 
 def getSince():
@@ -69,7 +73,7 @@ def getHistory(since):
     lsh = CC_LSH[:]
     if since:
         lsh.extend(['-since', since])
-    lsh.extend(cfg.getList('include', '.'))
+    lsh.extend(cfg.getInclude())
     return cc_exec(lsh)
 
 def filterBranches(version):
