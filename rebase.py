@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from users import users, mailSuffix
 from fnmatch import fnmatch
 from clearcase import cc
+from cache import Cache, Path
 
 """
 Things remaining:
@@ -22,6 +23,8 @@ ARGS = {
     'lshistory': 'Prints the raw output of lshistory to be cached for load',
     'load': 'Loads the contents of a previously saved lshistory file',
 }
+
+cache = Cache(GIT_CIR)
 
 def main(stash=False, dry_run=False, lshistory=False, load=None):
     if not (stash or dry_run or lshistory):
@@ -93,7 +96,7 @@ def parseHistory(lines):
         cstype = split[0]
         if cstype in TYPES:
             cs = TYPES[cstype](split, comment)
-            if filterBranches(cs.version):
+            if filterBranches(cs.version) and cache.isChild(Path(cs.file, cs.version)):
                 changesets.append(cs)
     last = None
     comment = None
@@ -154,6 +157,8 @@ class Group:
             files.append(file.file)
         for file in self.files:
             file.add(files)
+        cache.write()
+        git_exec(['add', cache.FILE])
         env = {}
         user = users.get(self.user, self.user)
         user = str(user)
@@ -190,6 +195,7 @@ class Changeset(object):
         else:
             os.chmod(toFile, stat.S_IWRITE)
         git_exec(['add', file], errors=False)
+        cache.update(Path(file, version))
 
 class Uncataloged(Changeset):
     def add(self, files):
@@ -203,6 +209,7 @@ class Uncataloged(Changeset):
                 continue
             if line.startswith('<'):
                 git_exec(['rm', '-r', getFile(line)], errors=False)
+                cache.remove(getFile(line))
             elif line.startswith('>'):
                 added = getFile(line)
                 cc_added = join(CC_DIR, added)
