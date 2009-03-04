@@ -1,4 +1,5 @@
 from os.path import join, exists
+from common import *
 
 FILE = '.gitcc'
 
@@ -6,9 +7,12 @@ FILE = '.gitcc'
 class Cache(object):
     def __init__(self, dir):
         self.map = {}
+        self.file = FILE
         self.dir = dir
         self.empty = Version('/main/0')
-        f = join(dir, FILE)
+        self.int = cfg.get('int')
+    def start(self):
+        f = join(self.dir, self.file)
         if exists(f):
             self.load(f)
         else:
@@ -20,16 +24,19 @@ class Cache(object):
         finally:
             f.close()
     def initial(self):
-        self.read(cc_exec(['ls', '-recurse', '-short', cfg.getInclude()]))
+        ls = ['ls', '-recurse', '-short']
+        ls.extend(cfg.getInclude())
+        self.read(cc_exec(ls))
     def read(self, lines):
         for line in lines.splitlines():
-            if not line:
+            if line.find('@@') < 0:
                 continue
             self.update(CCFile2(line))
-    def isChild(self, path):
-        return self.map.get(path.file, self.empty).isChild(path.version)
     def update(self, path):
-        self.map[path.file] = path.version
+        isChild = self.map.get(path.file, self.empty).isChild(path.version)
+        if isChild:
+            self.map[path.file] = path.version
+        return isChild or path.version.endswith(cfg.getBranches()[0])
     def remove(self, file):
         del self.map[file]
     def write(self):
@@ -37,8 +44,8 @@ class Cache(object):
         keys = self.map.keys()
         keys.sort()
         for file in keys:
-            lines.append(file + '@@' + self.map[file].version)
-        f = open(join(self.dir, FILE), 'w')
+            lines.append(file + '@@' + self.map[file].full)
+        f = open(join(self.dir, self.file), 'w')
         try:
             f.write('\n'.join(lines))
             f.write('\n')
@@ -47,6 +54,8 @@ class Cache(object):
 
 class CCFile(object):
     def __init__(self, file, version):
+        if file.startswith('.'):
+            file = file[2:]
         self.file = file
         self.version = Version(version)
 
@@ -57,9 +66,9 @@ class CCFile2(CCFile):
 
 class Version(object):
     def __init__(self, version):
-        version = version.replace('\\', '/')
-        self.version = version
+        self.full = version.replace('\\', '/')
+        self.version = '/'.join(self.full.split('/')[0:-1])
     def isChild(self, version):
-        return self.parent(version.version).startswith(self.parent(self.version))
-    def parent(self, version):
-        return '/'.join(version.split('/')[0:-1])
+        return version.version.startswith(self.version)
+    def endswith(self, version):
+        return self.version.endswith('/' + version)

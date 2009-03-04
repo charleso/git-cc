@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from users import users, mailSuffix
 from fnmatch import fnmatch
 from clearcase import cc
-from cache import Cache, Path
+from cache import Cache, CCFile
 
 """
 Things remaining:
@@ -24,12 +24,13 @@ ARGS = {
     'load': 'Loads the contents of a previously saved lshistory file',
 }
 
-cache = Cache(GIT_CIR)
+cache = Cache(GIT_DIR)
 
 def main(stash=False, dry_run=False, lshistory=False, load=None):
     if not (stash or dry_run or lshistory):
         checkPristine()
     since = getSince()
+    cache.start()
     if load:
         history = open(load, 'r').read()
     else:
@@ -83,7 +84,7 @@ def filterBranches(version):
     version = version.split('\\')
     version.pop()
     version = version[-1]
-    for branch in cfg.getList('branches', 'main'):
+    for branch in cfg.getBranches():
         if fnmatch(version, branch):
             return True
     return False
@@ -96,7 +97,7 @@ def parseHistory(lines):
         cstype = split[0]
         if cstype in TYPES:
             cs = TYPES[cstype](split, comment)
-            if filterBranches(cs.version) and cache.isChild(Path(cs.file, cs.version)):
+            if filterBranches(cs.version):
                 changesets.append(cs)
     last = None
     comment = None
@@ -158,7 +159,7 @@ class Group:
         for file in self.files:
             file.add(files)
         cache.write()
-        git_exec(['add', cache.FILE])
+        git_exec(['add', cache.file])
         env = {}
         user = users.get(self.user, self.user)
         user = str(user)
@@ -186,6 +187,8 @@ class Changeset(object):
     def add(self, files):
         self._add(self.file, self.version)
     def _add(self, file, version):
+        if not cache.update(CCFile(file, version)):
+            return
         toFile = join(GIT_DIR, file)
         mkdirs(toFile)
         removeFile(toFile)
@@ -195,7 +198,6 @@ class Changeset(object):
         else:
             os.chmod(toFile, stat.S_IWRITE)
         git_exec(['add', file], errors=False)
-        cache.update(Path(file, version))
 
 class Uncataloged(Changeset):
     def add(self, files):

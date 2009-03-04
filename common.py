@@ -97,6 +97,8 @@ class GitConfigParser():
         return self.get(name, default).split('|')
     def getInclude(self):
         return self.getCore('include', '.').split('|')
+    def getBranches(self):
+        return self.getList('branches', 'main')
 
 def write(file, blob):
     _write(file, blob)
@@ -127,3 +129,4 @@ if not CC_DIR:
 DEBUG = cfg.getCore('debug', True)
 CC_TAG = CURRENT_BRANCH + '_cc'
 CI_TAG = CURRENT_BRANCH + '_ci'
+
