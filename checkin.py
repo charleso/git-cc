@@ -6,6 +6,7 @@ from status import Modify, Add, Delete, Rename
 import filecmp
 from os import listdir
 from os.path import isdir
+import cache
 
 IGNORE_CONFLICTS=False
 
@@ -56,6 +57,8 @@ def getStatuses(id):
             args.append(split.pop(0))
         elif char == 'C':
             args = [split.pop(0)]
+        if args[0] == cache.FILE:
+            continue
         type = types[char](args)
         type.id = id
         list.append(type)
