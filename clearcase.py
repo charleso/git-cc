@@ -23,7 +23,6 @@ class UCM:
             debug(out)
             debug(cc_exec(['rebase', '-complete']))
     def mkact(self, comment):
-        self.rebase()
         self.activity = self._getActivities().get(comment)
         if self.activity:
             cc_exec(['setact', self.activity])

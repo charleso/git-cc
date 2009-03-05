@@ -20,6 +20,9 @@ def main(force=False, no_deliver=False):
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
     log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
+    if not log:
+        return
+    cc.rebase()
     comment = []
     id = None
     def _commit():
@@ -27,8 +30,6 @@ def main(force=False, no_deliver=False):
             return
         statuses = getStatuses(id)
         checkout(statuses, '\n'.join(comment))
-        if not no_deliver:
-            cc.commit()
         tag(CI_TAG, id)
     for line in log.splitlines():
         if line == "":
@@ -40,6 +41,8 @@ def main(force=False, no_deliver=False):
         else:
             comment.append(line)
     _commit()
+    if not no_deliver:
+        cc.commit()
 
 def getStatuses(id):
     status = git_exec(['diff','--name-status', '-M', '-z', '%s^..%s' % (id, id)])
