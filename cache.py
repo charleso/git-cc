@@ -38,7 +38,8 @@ class Cache(object):
             self.map[path.file] = path.version
         return isChild or path.version.endswith(cfg.getBranches()[0])
     def remove(self, file):
-        del self.map[file]
+        if self.map.has_key(file):
+            del self.map[file]
     def write(self):
         lines = []
         keys = self.map.keys()
