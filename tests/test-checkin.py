@@ -23,6 +23,9 @@ class CheckinTest(TestCaseEx):
             (['git', 'diff', '--name-status', '-M', '-z', '%s^..%s' % (commit, commit)], '\n'.join(nameStatus)),
         ])
         types = {'M': MockModfy, 'A': MockAdd, 'D': MockDelete, 'R': MockRename}
+        self.expectedExec.extend([
+            (['git', 'merge-base', CI_TAG, 'HEAD'], 'abcdef'),
+        ])
         for type, file in files:
             types[type](self.expectedExec, commit, message, file)
         self.expectedExec.extend([
@@ -61,7 +64,6 @@ class MockStatus:
         hash1 = 'hash1'
         return [
             (['git', 'hash-object', join(CC_DIR, file)], hash1 + '\n'),
-            (['git', 'merge-base', CI_TAG, 'HEAD'], 'abcdef'),
             self.lsTree('abcdef', file, hash1),
         ]
     def co(self, file):

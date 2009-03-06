@@ -79,6 +79,7 @@ class Transaction:
     def __init__(self, comment):
         self.checkedout = []
         cc.mkact(comment)
+        self.base = git_exec(['merge-base', CI_TAG, 'HEAD']).strip()
     def add(self, file):
         self.checkedout.append(file)
     def co(self, file):
@@ -92,7 +93,7 @@ class Transaction:
         global IGNORE_CONFLICTS    
         self.co(file)
         ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
-        gitid = getBlob(git_exec(['merge-base', CI_TAG, 'HEAD']).strip(), file)
+        gitid = getBlob(self.base, file)
         if ccid != gitid:
             if not IGNORE_CONFLICTS:
                 raise Exception('File has been modified: %s. Try rebasing.' % file)
