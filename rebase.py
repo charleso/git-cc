@@ -49,7 +49,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         doStash(lambda: doCommit(cs), stash)
 
 def checkPristine():
-    if(len(git_exec(['ls-files', '--modified']).splitlines()) > 0):
+    if(len(git_exec(['ls-files', '--modified', '--others', '--exclude-standard']).splitlines()) > 0):
         fail('There are uncommitted files in your git directory')
 
 def doCommit(cs):
