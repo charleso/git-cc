@@ -57,12 +57,14 @@ def doCommit(cs):
     branch = CURRENT_BRANCH
     if branch:
         git_exec(['checkout', CC_TAG])
-    commit(cs)
-    if len(branch):
-        git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
-    else:
-        tag(CC_TAG)
-    tag(CI_TAG, CC_TAG)
+    try:
+        commit(cs)
+    finally:
+        if branch:
+            git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
+        else:
+            git_exec(['branch', '-f', CC_TAG])
+        tag(CI_TAG, CC_TAG)
 
 def getSince():
     try:
