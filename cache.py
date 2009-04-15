@@ -3,7 +3,6 @@ from common import *
 
 FILE = '.gitcc'
 
-# TODO DIRTY?!?
 class Cache(object):
     def __init__(self, dir):
         self.map = {}
