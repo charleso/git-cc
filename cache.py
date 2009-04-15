@@ -51,10 +51,17 @@ class Cache(object):
             f.write('\n')
         finally:
             f.close()
+    def list(self):
+        values = []
+        for file, version in self.map.items():
+            values.append(CCFile(file, version.full))
+        return values
+    def contains(self, path):
+        return self.map.get(path.file, self.empty).full == path.version.full
 
 class CCFile(object):
     def __init__(self, file, version):
-        if file.startswith('.'):
+        if file.startswith('./') or file.startswith('.\\'):
             file = file[2:]
         self.file = file
         self.version = Version(version)
