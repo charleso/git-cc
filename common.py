@@ -99,6 +99,8 @@ class GitConfigParser():
         return self.getCore('include', '.').split('|')
     def getBranches(self):
         return self.getList('branches', 'main')
+    def getExtraBranches(self):
+        return self.getList('_branches', 'main')
 
 def write(file, blob):
     _write(file, blob)

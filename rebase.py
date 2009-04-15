@@ -80,11 +80,14 @@ def getHistory(since):
     lsh.extend(cfg.getInclude())
     return cc_exec(lsh)
 
-def filterBranches(version):
+def filterBranches(version, all=False):
     version = version.split('\\')
     version.pop()
     version = version[-1]
-    for branch in cfg.getBranches():
+    branches = cfg.getBranches();
+    if all:
+        branches.extend(cfg.getExtraBranches())
+    for branch in branches:
         if fnmatch(version, branch):
             return True
     return False
@@ -220,10 +223,11 @@ class Uncataloged(Changeset):
                 history = cc_exec(['lshistory', '-fmt', '%o%m|%d|%Vn\\n', added])
                 date = cc_exec(['describe', '-fmt', '%d', dir])
                 def f(s):
-                    return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2])
+                    return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2], True)
                 versions = list(filter(f, list(map(lambda x: x.split('|'), history.split('\n')))))
-                if len(versions) == 0:
-                    raise Exception("It appears that you may be missing a branch (or have a mis-spelling) in the includes section of your gitcc config file.")  
+                if not versions:
+                    print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)  
+                    continue
                 self._add(added, versions[0][2].strip())
 
 TYPES = {\
