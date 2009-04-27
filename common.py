@@ -126,7 +126,7 @@ def validateCC():
 GIT_DIR = gitDir()
 if not exists(join(GIT_DIR, '.git')):
     fail("fatal: Not a git repository (or any of the parent directories): .git")
-CURRENT_BRANCH = getCurrentBranch()
+CURRENT_BRANCH = getCurrentBranch() or 'master'
 cfg = GitConfigParser(CURRENT_BRANCH)
 cfg.read()
 CC_DIR = cfg.get(CFG_CC)

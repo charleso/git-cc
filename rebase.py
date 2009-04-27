@@ -55,7 +55,7 @@ def checkPristine():
         fail('There are uncommitted files in your git directory')
 
 def doCommit(cs):
-    branch = CURRENT_BRANCH
+    branch = getCurrentBranch()
     if branch:
         git_exec(['checkout', CC_TAG])
     try:
