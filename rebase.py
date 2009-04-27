@@ -84,7 +84,7 @@ def getHistory(since):
     return cc_exec(lsh)
 
 def filterBranches(version, all=False):
-    version = version.split('\\')
+    version = version.split(os.sep)
     version.pop()
     version = version[-1]
     branches = cfg.getBranches();
