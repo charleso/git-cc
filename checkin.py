@@ -16,6 +16,7 @@ ARGS = {
 }
 
 def main(force=False, no_deliver=False):
+    validateCC()
     global IGNORE_CONFLICTS
     if force:
         IGNORE_CONFLICTS=True

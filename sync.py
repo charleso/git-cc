@@ -11,6 +11,7 @@ ARGS = {
 }
 
 def main(cache=False):
+    validateCC()
     if cache:
         return syncCache()
     glob = '*'

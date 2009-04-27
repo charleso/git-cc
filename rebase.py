@@ -27,6 +27,7 @@ ARGS = {
 cache = Cache(GIT_DIR)
 
 def main(stash=False, dry_run=False, lshistory=False, load=None):
+    validateCC()
     if not (stash or dry_run or lshistory):
         checkPristine()
     since = getSince()

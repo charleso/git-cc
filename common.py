@@ -119,6 +119,10 @@ def removeFile(file):
     if exists(file):
         os.remove(file)
 
+def validateCC():
+    if not CC_DIR:
+        fail("No 'clearcase' variable found for branch '%s'" % CURRENT_BRANCH)
+
 GIT_DIR = gitDir()
 if not exists(join(GIT_DIR, '.git')):
     fail("fatal: Not a git repository (or any of the parent directories): .git")
@@ -126,8 +130,6 @@ CURRENT_BRANCH = getCurrentBranch()
 cfg = GitConfigParser(CURRENT_BRANCH)
 cfg.read()
 CC_DIR = cfg.get(CFG_CC)
-if not CC_DIR:
-    fail("No 'clearcase' variable found for branch '%s'" % CURRENT_BRANCH)
 DEBUG = cfg.getCore('debug', True)
 CC_TAG = CURRENT_BRANCH + '_cc'
 CI_TAG = CURRENT_BRANCH + '_ci'
