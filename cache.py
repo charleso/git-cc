@@ -42,7 +42,7 @@ class Cache(object):
     def write(self):
         lines = []
         keys = self.map.keys()
-        keys.sort()
+        keys = sorted(keys)
         for file in keys:
             lines.append(file + '@@' + self.map[file].full)
         f = open(join(self.dir, self.file), 'w')
