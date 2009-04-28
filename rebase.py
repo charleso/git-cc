@@ -176,8 +176,8 @@ class Group:
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         try:
             git_exec(['commit', '-m', comment], env=env)
-        except Exception, [e]:
-            if not e.find('nothing to commit') >= 0:
+        except Exception as e:
+            if not e.args[0].find('nothing to commit') >= 0:
                 raise
 
 def cc_file(file, version):
