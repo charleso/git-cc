@@ -213,7 +213,7 @@ class Uncataloged(Changeset):
         dir = cc_file(self.file, self.version)
         diff = cc_exec(['diff', '-diff_format', '-pred', dir], errors=False)
         def getFile(line):
-            return join(self.file, line[2:line.find(' --') - 1])
+            return join(self.file, line[2:max(line.find('  '), line.find(os.sep + ' '))])
         for line in diff.split('\n'):
             sym = line.find(' -> ')
             if sym >= 0:
