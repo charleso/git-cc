@@ -14,7 +14,7 @@ Things remaining:
 1. Renames with no content change. Tricky.
 """
 
-CC_LSH = ['lsh', '-fmt', '%o%m|%d|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
+CC_LSH = ['lsh', '-fmt', '%o%m|%Nd|%d|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
 DELIM = '|'
 
 ARGS = {
@@ -42,7 +42,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         print(history)
     else:
         cs = parseHistory(history)
-        cs.sort(key = lambda x: x.date)
+        cs.sort(key = lambda x: x.numdate)
         cs = mergeHistory(cs)
         if dry_run:
             return printGroups(cs)
@@ -114,7 +114,7 @@ def parseHistory(lines):
             comment += "\n" + split[0]
         else:
             add(last, comment)
-            comment = split[5]
+            comment = split[6]
             last = split
     add(last, comment)
     return changesets
@@ -152,6 +152,7 @@ class Group:
         self.files = []
         self.append(cs)
     def append(self, cs):
+        self.numdate = cs.numdate
         self.date = cs.date
         self.files.append(cs)
     def fixComment(self):
@@ -185,10 +186,11 @@ def cc_file(file, version):
 
 class Changeset(object):
     def __init__(self, split, comment):
-        self.date = split[1]
-        self.user = split[2]
-        self.file = split[3]
-        self.version = split[4]
+        self.numdate = split[1]
+        self.date = split[2]
+        self.user = split[3]
+        self.file = split[4]
+        self.version = split[5]
         self.comment = comment
         self.subject = comment.split('\n')[0]
     def add(self, files):
@@ -224,8 +226,8 @@ class Uncataloged(Changeset):
                 cc_added = join(CC_DIR, added)
                 if not exists(cc_added) or isdir(cc_added) or added in files:
                     continue
-                history = cc_exec(['lshistory', '-fmt', '%o%m|%d|%Vn\\n', added])
-                date = cc_exec(['describe', '-fmt', '%d', dir])
+                history = cc_exec(['lshistory', '-fmt', '%o%m|%Nd|%Vn\\n', added])
+                date = cc_exec(['describe', '-fmt', '%Nd', dir])
                 def f(s):
                     return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2], True)
                 versions = list(filter(f, list(map(lambda x: x.split('|'), history.split('\n')))))
