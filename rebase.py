@@ -15,7 +15,7 @@ Things remaining:
 1. Renames with no content change. Tricky.
 """
 
-CC_LSH = ['lsh', '-fmt', '%o%m|%Nd|%d|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
+CC_LSH = ['lsh', '-fmt', '%o%m|%Nd|%u|%En|%Vn|'+cc.getCommentFmt()+'\\n', '-recurse']
 DELIM = '|'
 
 ARGS = {
@@ -43,7 +43,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         print(history)
     else:
         cs = parseHistory(history)
-        cs.sort(key = lambda x: x.numdate)
+        cs.sort(key = lambda x: x.date)
         cs = mergeHistory(cs)
         if dry_run:
             return printGroups(cs)
@@ -115,7 +115,7 @@ def parseHistory(lines):
             comment += "\n" + split[0]
         else:
             add(last, comment)
-            comment = split[6]
+            comment = split[5]
             last = split
     add(last, comment)
     return changesets
@@ -153,13 +153,15 @@ class Group:
         self.files = []
         self.append(cs)
     def append(self, cs):
-        self.numdate = cs.numdate
         self.date = cs.date
         self.files.append(cs)
     def fixComment(self):
         self.comment = cc.getRealComment(self.comment)
         self.subject = self.comment.split('\n')[0]
     def commit(self):
+        def getCommitDate(date):
+            return date[:4] + '-' + date[4:6] + '-' + date[6:8] + ' ' + \
+                   date[9:11] + ':' + date[11:13] + ':' + date[13:15]
         def getUserName(user):
             return str(user).split(' <')[0]
         def getUserEmail(user):
@@ -177,7 +179,7 @@ class Group:
         git_exec(['add', cache.file])
         env = {}
         user = users.get(self.user, self.user)
-        env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(self.date)
+        env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = getCommitDate(self.date)
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = getUserName(user)
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
@@ -192,11 +194,10 @@ def cc_file(file, version):
 
 class Changeset(object):
     def __init__(self, split, comment):
-        self.numdate = split[1]
-        self.date = split[2]
-        self.user = split[3]
-        self.file = split[4]
-        self.version = split[5]
+        self.date = split[1]
+        self.user = split[2]
+        self.file = split[3]
+        self.version = split[4]
         self.comment = comment
         self.subject = comment.split('\n')[0]
     def add(self, files):
