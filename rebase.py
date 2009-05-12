@@ -8,6 +8,7 @@ from users import users, mailSuffix
 from fnmatch import fnmatch
 from clearcase import cc
 from cache import Cache, CCFile
+from re import search
 
 """
 Things remaining:
@@ -178,7 +179,7 @@ class Group:
         try:
             git_exec(['commit', '-m', comment], env=env)
         except Exception as e:
-            if not e.args[0].find('nothing to commit') >= 0:
+            if search('nothing( added)? to commit', e.args[0]) == None:
                 raise
 
 def cc_file(file, version):
