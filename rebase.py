@@ -160,8 +160,14 @@ class Group:
         self.comment = cc.getRealComment(self.comment)
         self.subject = self.comment.split('\n')[0]
     def commit(self):
+        def getUserName(user):
+            return str(user).split(' <')[0]
         def getUserEmail(user):
-            return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), mailSuffix)
+            email = search('<.*@.*>', str(user))
+            if email == None:
+                return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), mailSuffix)
+            else:
+                return email.group(0)
         files = []
         for file in self.files:
             files.append(file.file)
@@ -171,9 +177,8 @@ class Group:
         git_exec(['add', cache.file])
         env = {}
         user = users.get(self.user, self.user)
-        user = str(user)
         env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(self.date)
-        env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = user
+        env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = getUserName(user)
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = getUserEmail(user)
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         try:
