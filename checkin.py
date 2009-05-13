@@ -6,22 +6,26 @@ from status import Modify, Add, Delete, Rename
 import filecmp
 from os import listdir
 from os.path import isdir
-import cache
+import cache, reset
 
 IGNORE_CONFLICTS=False
 
 ARGS = {
     'force': 'ignore conflicts and check-in anyway',
     'no_deliver': 'do not deliver in UCM mode',
+    'initial': 'checkin everything from the beginning',
 }
 
-def main(force=False, no_deliver=False):
+def main(force=False, no_deliver=False, initial=False):
     validateCC()
     global IGNORE_CONFLICTS
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
-    log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%x00%n%H%n%s%n%n%b', CI_TAG + '..'])
+    log = ['log', '--first-parent', '--reverse', '--pretty=format:%x00%n%H%n%s%n%b']
+    if not initial:
+        log.append(CI_TAG + '..')
+    log = git_exec(log)
     if not log:
         return
     cc.rebase()
@@ -30,8 +34,8 @@ def main(force=False, no_deliver=False):
     def _commit():
         if not id:
             return
-        statuses = getStatuses(id)
-        checkout(statuses, '\n'.join(comment).strip())
+        statuses = getStatuses(id, initial)
+        checkout(statuses, '\n'.join(comment).strip(), initial)
         tag(CI_TAG, id)
     for line in log.splitlines():
         if line == "\x00":
@@ -45,9 +49,18 @@ def main(force=False, no_deliver=False):
     _commit()
     if not no_deliver:
         cc.commit()
+    if initial:
+        git_exec(['commit', '--allow-empty', '-m', 'Empty commit'])
+        reset.main('HEAD')
 
-def getStatuses(id):
-    status = git_exec(['diff','--name-status', '-M', '-z', '--ignore-submodules', '%s^..%s' % (id, id)])
+def getStatuses(id, initial):
+    cmd = ['diff','--name-status', '-M', '-z', '--ignore-submodules', '%s^..%s' % (id, id)]
+    if initial:
+        cmd = cmd[:-1]
+        cmd[0] = 'show'
+        cmd.extend(['--pretty=format:', id])
+    status = git_exec(cmd)
+    status = status.strip()
     types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add}
     list = []
     split = status.split('\x00')
@@ -65,10 +78,10 @@ def getStatuses(id):
         list.append(type)
     return list
 
-def checkout(stats, comment):
+def checkout(stats, comment, initial):
     """Poor mans two-phase commit"""
     failed = None
-    transaction = Transaction(comment)
+    transaction = ITransaction(comment) if initial else Transaction(comment)
     for stat in stats:
         try:
             stat.stage(transaction)
@@ -82,11 +95,10 @@ def checkout(stats, comment):
          stat.commit(transaction)
     transaction.commit(comment);
 
-class Transaction:
+class ITransaction(object):
     def __init__(self, comment):
         self.checkedout = []
         cc.mkact(comment)
-        self.base = git_exec(['merge-base', CI_TAG, 'HEAD']).strip()
     def add(self, file):
         self.checkedout.append(file)
     def co(self, file):
@@ -97,15 +109,7 @@ class Transaction:
         if file not in self.checkedout:
             self.co(file)
     def stage(self, file):
-        global IGNORE_CONFLICTS    
         self.co(file)
-        ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
-        gitid = getBlob(self.base, file)
-        if ccid != gitid:
-            if not IGNORE_CONFLICTS:
-                raise Exception('File has been modified: %s. Try rebasing.' % file)
-            else:
-                print ('WARNING: Detected possible confilct with',file,'...ignoring...')
     def rollback(self):
         for file in self.checkedout:
             cc_exec(['unco', '-rm', file])
@@ -113,3 +117,17 @@ class Transaction:
     def commit(self, comment):
         for file in self.checkedout:
             cc_exec(['ci', '-identical', '-c', comment, file])
+
+class Transaction(ITransaction):
+    def __init__(self, comment):
+        super(Transaction, self).__init__(comment)
+        self.base = git_exec(['merge-base', CI_TAG, 'HEAD']).strip()
+    def stage(self, file):
+        super(Transaction, self).stage(file)
+        ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
+        gitid = getBlob(self.base, file)
+        if ccid != gitid:
+            if not IGNORE_CONFLICTS:
+                raise Exception('File has been modified: %s. Try rebasing.' % file)
+            else:
+                print ('WARNING: Detected possible confilct with',file,'...ignoring...')
