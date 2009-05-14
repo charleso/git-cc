@@ -213,7 +213,7 @@ class Changeset(object):
             git_exec(['checkout', 'HEAD', toFile])
         else:
             os.chmod(toFile, stat.S_IWRITE)
-        git_exec(['add', file], errors=False)
+        git_exec(['add', '-f', file], errors=False)
 
 class Uncataloged(Changeset):
     def add(self, files):
