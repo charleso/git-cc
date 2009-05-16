@@ -21,7 +21,7 @@ def main(force=False, no_deliver=False):
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
-    log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%H%n%s%n%b', CI_TAG + '..'])
+    log = git_exec(['log', '--first-parent', '--reverse', '--pretty=format:%x00%n%H%n%s%n%n%b', CI_TAG + '..'])
     if not log:
         return
     cc.rebase()
@@ -34,11 +34,11 @@ def main(force=False, no_deliver=False):
         checkout(statuses, '\n'.join(comment))
         tag(CI_TAG, id)
     for line in log.splitlines():
-        if line == "":
+        if line == "\x00":
             _commit()
             comment = []
             id = None
-        if not id:
+        elif not id:
             id = line
         else:
             comment.append(line)
