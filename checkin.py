@@ -47,7 +47,7 @@ def main(force=False, no_deliver=False):
         cc.commit()
 
 def getStatuses(id):
-    status = git_exec(['diff','--name-status', '-M', '-z', '%s^..%s' % (id, id)])
+    status = git_exec(['diff','--name-status', '-M', '-z', '--ignore-submodules', '%s^..%s' % (id, id)])
     types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add}
     list = []
     split = status.split('\x00')
