@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from users import users, mailSuffix
 from fnmatch import fnmatch
 from clearcase import cc
-from cache import Cache, CCFile
+from cache import getCache, CCFile
 from re import search
 
 """
@@ -25,7 +25,7 @@ ARGS = {
     'load': 'Loads the contents of a previously saved lshistory file',
 }
 
-cache = Cache(GIT_DIR)
+cache = getCache()
 
 def main(stash=False, dry_run=False, lshistory=False, load=None):
     validateCC()
@@ -176,7 +176,6 @@ class Group:
         for file in self.files:
             file.add(files)
         cache.write()
-        git_exec(['add', cache.file])
         env = {}
         user = users.get(self.user, self.user)
         env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(getCommitDate(self.date))

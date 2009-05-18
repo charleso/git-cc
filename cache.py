@@ -3,13 +3,17 @@ from common import *
 
 FILE = '.gitcc'
 
+def getCache():
+    if cfg.getCore('cache', True) == 'False':
+        return NoCache()
+    return Cache(GIT_DIR)
+
 class Cache(object):
     def __init__(self, dir):
         self.map = {}
         self.file = FILE
         self.dir = dir
         self.empty = Version('/main/0')
-        self.int = cfg.get('int')
     def start(self):
         f = join(self.dir, self.file)
         if exists(f):
@@ -51,6 +55,7 @@ class Cache(object):
             f.write('\n')
         finally:
             f.close()
+        git_exec(['add', self.file])
     def list(self):
         values = []
         for file, version in self.map.items():
@@ -58,6 +63,16 @@ class Cache(object):
         return values
     def contains(self, path):
         return self.map.get(path.file, self.empty).full == path.version.full
+
+class NoCache(object):
+    def start(self):
+        pass
+    def write(self):
+        pass
+    def update(self, path):
+        return True
+    def remove(self, file):
+        pass
 
 class CCFile(object):
     def __init__(self, file, version):
