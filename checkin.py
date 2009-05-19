@@ -31,7 +31,7 @@ def main(force=False, no_deliver=False):
         if not id:
             return
         statuses = getStatuses(id)
-        checkout(statuses, '\n'.join(comment))
+        checkout(statuses, '\n'.join(comment).strip())
         tag(CI_TAG, id)
     for line in log.splitlines():
         if line == "\x00":
