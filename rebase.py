@@ -211,7 +211,7 @@ class Changeset(object):
         if not exists(toFile):
             git_exec(['checkout', 'HEAD', toFile])
         else:
-            os.chmod(toFile, stat.S_IWRITE)
+            os.chmod(toFile, os.stat(toFile).st_mode | stat.S_IWRITE)
         git_exec(['add', '-f', file], errors=False)
 
 class Uncataloged(Changeset):
