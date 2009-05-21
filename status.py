@@ -8,7 +8,9 @@ class Status:
         self.file = file
     def cat(self):
         blob = git_exec(['cat-file', 'blob', getBlob(self.id, self.file)], decode=False)
-        write(join(CC_DIR, self.file), blob)
+        file = join(CC_DIR, self.file)
+        write(file, blob)
+        os.utime(file, (self.time, self.time))
     def stageDirs(self, t):
         dir = dirname(self.file)
         dirs = []
@@ -22,6 +24,7 @@ class Status:
             dir = self.dirs.pop();
             if not exists(join(CC_DIR, dir)):
                 cc_exec(['mkelem', '-nc', '-eltype', 'directory', dir])
+                os.utime(dir, (self.time, self.time))
                 t.add(dir)
 
 class Modify(Status):

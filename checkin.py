@@ -9,7 +9,7 @@ from os.path import isdir
 import cache, reset
 
 IGNORE_CONFLICTS=False
-LOG_FORMAT = '%H%x01%s%n%b'
+LOG_FORMAT = '%H%x01%ct%x01%s%n%b'
 
 ARGS = {
     'force': 'ignore conflicts and check-in anyway',
@@ -31,8 +31,9 @@ def main(force=False, no_deliver=False, initial=False):
         return
     cc.rebase()
     for line in log.split('\x00'):
-        id, comment = line.split('\x01')
-        statuses = getStatuses(id, initial)
+        id, time, comment = line.split('\x01')
+        time = float(time)
+        statuses = getStatuses(id, time, initial)
         checkout(statuses, comment.strip(), initial)
         tag(CI_TAG, id)
     if not no_deliver:
@@ -41,7 +42,7 @@ def main(force=False, no_deliver=False, initial=False):
         git_exec(['commit', '--allow-empty', '-m', 'Empty commit'])
         reset.main('HEAD')
 
-def getStatuses(id, initial):
+def getStatuses(id, time, initial):
     cmd = ['diff','--name-status', '-M', '-z', '--ignore-submodules', '%s^..%s' % (id, id)]
     if initial:
         cmd = cmd[:-1]
@@ -63,6 +64,7 @@ def getStatuses(id, initial):
             continue
         type = types[char](args)
         type.id = id
+        type.time = time
         list.append(type)
     return list
 
@@ -104,7 +106,7 @@ class ITransaction(object):
         cc.rmactivity()
     def commit(self, comment):
         for file in self.checkedout:
-            cc_exec(['ci', '-identical', '-c', comment, file])
+            cc_exec(['ci', '-identical', '-c', comment, '-ptime', file])
 
 class Transaction(ITransaction):
     def __init__(self, comment):
