@@ -9,6 +9,7 @@ from os.path import isdir
 import cache, reset
 
 IGNORE_CONFLICTS=False
+LOG_FORMAT = '%H%x01%s%n%b'
 
 ARGS = {
     'force': 'ignore conflicts and check-in anyway',
@@ -22,31 +23,18 @@ def main(force=False, no_deliver=False, initial=False):
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
-    log = ['log', '--first-parent', '--reverse', '--pretty=format:%x00%n%H%n%s%n%b']
+    log = ['log', '-z', '--first-parent', '--reverse', '--pretty=format:'+ LOG_FORMAT ]
     if not initial:
         log.append(CI_TAG + '..')
     log = git_exec(log)
     if not log:
         return
     cc.rebase()
-    comment = []
-    id = None
-    def _commit():
-        if not id:
-            return
+    for line in log.split('\x00'):
+        id, comment = line.split('\x01')
         statuses = getStatuses(id, initial)
-        checkout(statuses, '\n'.join(comment).strip(), initial)
+        checkout(statuses, comment.strip(), initial)
         tag(CI_TAG, id)
-    for line in log.splitlines():
-        if line == "\x00":
-            _commit()
-            comment = []
-            id = None
-        elif not id:
-            id = line
-        else:
-            comment.append(line)
-    _commit()
     if not no_deliver:
         cc.commit()
     if initial:
