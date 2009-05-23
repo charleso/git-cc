@@ -82,7 +82,9 @@ def getHistory(since):
     lsh = CC_LSH[:]
     if since:
         lsh.extend(['-since', since])
-    lsh.extend(cfg.getInclude())
+    include = cfg.getInclude()
+    include = filter((lambda x: x != '.'), include)
+    lsh.extend(include)
     return cc_exec(lsh)
 
 def filterBranches(version, all=False):
