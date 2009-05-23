@@ -23,6 +23,15 @@ class Status:
             if not exists(join(CC_DIR, dir)):
                 cc_exec(['mkelem', '-nc', '-eltype', 'directory', dir])
                 t.add(dir)
+    def removeEmptyDirs(self, t, file):
+        dir = dirname(file)
+        while not os.listdir(join(CC_DIR, dir)):
+            t.stageDir(dirname(dir))
+            if dir in t.checkedout:
+                cc_exec(['ci', '-nc', dir])
+                t.checkedout.remove(dir)
+            cc_exec(['rm', dir])
+            dir = dirname(dir)
 
 class Modify(Status):
     def stage(self, t):
@@ -43,8 +52,8 @@ class Delete(Status):
     def stage(self, t):
         t.stageDir(dirname(self.file))
     def commit(self, t):
-        # TODO Empty dirs?!?
         cc_exec(['rm', self.file])
+        self.removeEmptyDirs(t, self.file)
 
 class Rename(Status):
     def __init__(self, files):
@@ -58,6 +67,7 @@ class Rename(Status):
     def commit(self, t):
         self.commitDirs(t)
         cc_exec(['mv', '-nc', self.old, self.new])
+        self.removeEmptyDirs(t, self.old)
         t.checkedout.remove(self.old)
         t.add(self.new)
         self.cat()
