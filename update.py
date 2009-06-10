@@ -5,7 +5,7 @@ import sync, reset
 
 def main(message):
     cc_exec(['update', '.'], errors=False)
-    sync.main('*')
+    sync.main()
     git_exec(['add', '.'])
     git_exec(['commit', '-m', message])
     reset.main('HEAD')
