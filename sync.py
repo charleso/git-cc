@@ -19,6 +19,8 @@ def main(cache=False):
     for i in cfg.getInclude():
         for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):
             reldir = dirpath[len(base)+1:]
+            if fnmatch(reldir, './lost+found')
+                continue
             for file in filenames:
                 if fnmatch(file, glob):
                     copy(join(reldir, file))
