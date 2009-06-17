@@ -63,7 +63,8 @@ def doCommit(cs):
         commit(cs)
     finally:
         if branch:
-            git_exec(['rebase', '--onto', CC_TAG, CI_TAG, branch])
+            git_exec(['rebase', CI_TAG, CC_TAG])
+            git_exec(['rebase', CC_TAG, branch])
         else:
             git_exec(['branch', '-f', CC_TAG])
         tag(CI_TAG, CC_TAG)
