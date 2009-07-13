@@ -68,17 +68,14 @@ def getStatuses(id, initial):
 
 def checkout(stats, comment, initial):
     """Poor mans two-phase commit"""
-    failed = None
     transaction = ITransaction(comment) if initial else Transaction(comment)
     for stat in stats:
         try:
             stat.stage(transaction)
         except:
-            failed = True
-            break;
-    if failed:
-        transaction.rollback()
-        raise
+            transaction.rollback()
+            raise
+
     for stat in stats:
          stat.commit(transaction)
     transaction.commit(comment);
