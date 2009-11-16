@@ -233,7 +233,9 @@ class Uncataloged(Changeset):
                 cc_added = join(CC_DIR, added)
                 if not exists(cc_added) or isdir(cc_added) or added in files:
                     continue
-                history = cc_exec(['lshistory', '-fmt', '%o%m|%Nd|%Vn\\n', added])
+                history = cc_exec(['lshistory', '-fmt', '%o%m|%Nd|%Vn\\n', added], errors=False)
+                if not history:
+                    continue
                 date = cc_exec(['describe', '-fmt', '%Nd', dir])
                 def f(s):
                     return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2], True)
