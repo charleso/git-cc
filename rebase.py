@@ -177,7 +177,7 @@ class Group:
         for file in self.files:
             file.add(files)
         cache.write()
-        env = {}
+        env = os.environ
         user = users.get(self.user, self.user)
         env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(getCommitDate(self.date))
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = getUserName(user)
