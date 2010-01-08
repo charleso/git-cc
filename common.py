@@ -38,7 +38,8 @@ def cc_exec(cmd, **args):
 def popen(exe, cmd, cwd, env=None, decode=True, errors=True):
     cmd.insert(0, exe)
     if DEBUG:
-        debug('> ' + ' '.join(cmd))
+        f = lambda a: a if not a.count(' ') else '"%s"' % a
+        debug('> ' + ' '.join(map(f, cmd)))
     pipe = Popen(cmd, cwd=cwd, stdout=PIPE, stderr=PIPE, env=env)
     (stdout, stderr) = pipe.communicate()
     if errors and pipe.returncode > 0:
