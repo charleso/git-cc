@@ -30,7 +30,7 @@ def copy(file):
     debug('Copying %s' % newFile)
     mkdirs(newFile)
     shutil.copy(join(CC_DIR, file), newFile)
-    os.chmod(newFile, stat.S_IWRITE)
+    os.chmod(newFile, stat.S_IREAD | stat.S_IWRITE)
 
 def syncCache():
     cache1 = Cache(GIT_DIR)
