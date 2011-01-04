@@ -11,7 +11,14 @@ else:
 
 CFG_CC = 'clearcase'
 CC_DIR = None
-ENCODING = sys.stdin.encoding
+ENCODING = None
+if hasattr(sys.stdin, 'encoding'):
+    ENCODING = sys.stdin.encoding
+if ENCODING is None:
+    import locale
+    locale_name, ENCODING = locale.getdefaultlocale()
+if ENCODING is None:
+    ENCODING = "ISO8859-1"
 DEBUG = False
 
 def fail(string):
