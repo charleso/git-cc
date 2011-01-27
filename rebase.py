@@ -115,9 +115,14 @@ def parseHistory(lines):
         if len(split) == 1 and last:
             comment += "\n" + split[0]
         else:
-            add(last, comment)
-            comment = split[5]
-            last = split
+            try:
+                add(last, comment)
+                comment = split[5]
+                last = split
+            except:
+                print "unexpected error: split "
+                print split
+                raise 
     add(last, comment)
     return changesets
 
