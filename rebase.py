@@ -112,12 +112,13 @@ def parseHistory(lines):
     comment = None
     for line in lines.splitlines():
         split = line.split(DELIM)
-        if len(split) == 1 and last:
-            comment += "\n" + split[0]
+        if len(split) < 6 and last:
+            # Cope with comments with '|' character in them
+            comment += "\n" + "".join(split)
         else:
             try:
                 add(last, comment)
-                comment = split[5]
+                comment = "".join(split[5:])
                 last = split
             except:
                 print "unexpected error: split "
