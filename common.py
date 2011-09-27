@@ -9,6 +9,13 @@ if v30:
 else:
     from ConfigParser import SafeConfigParser
 
+IS_CYGWIN = sys.platform == 'cygwin'
+
+if IS_CYGWIN:
+    FS = '\\'
+else:
+    FS = os.sep
+
 CFG_CC = 'clearcase'
 CC_DIR = None
 ENCODING = None
@@ -130,14 +137,20 @@ def removeFile(file):
 def validateCC():
     if not CC_DIR:
         fail("No 'clearcase' variable found for branch '%s'" % CURRENT_BRANCH)
+        
+def path(path, args='-m'):
+    if IS_CYGWIN:
+        return os.popen('cygpath %s "%s"' %(args, path)).readlines()[0].strip()
+    else:
+        return path
 
-GIT_DIR = gitDir()
+GIT_DIR = path(gitDir())
 if not exists(join(GIT_DIR, '.git')):
     fail("fatal: Not a git repository (or any of the parent directories): .git")
 CURRENT_BRANCH = getCurrentBranch() or 'master'
 cfg = GitConfigParser(CURRENT_BRANCH)
 cfg.read()
-CC_DIR = cfg.get(CFG_CC)
+CC_DIR = path(cfg.get(CFG_CC))
 DEBUG = cfg.getCore('debug', True)
 CC_TAG = CURRENT_BRANCH + '_cc'
 CI_TAG = CURRENT_BRANCH + '_ci'
