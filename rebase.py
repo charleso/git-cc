@@ -87,7 +87,7 @@ def getHistory(since):
     return cc_exec(lsh)
 
 def filterBranches(version, all=False):
-    version = version.split(os.sep)
+    version = version.split(FS)
     version.pop()
     version = version[-1]
     branches = cfg.getBranches();
@@ -210,7 +210,7 @@ class Changeset(object):
     def _add(self, file, version):
         if not cache.update(CCFile(file, version)):
             return
-        toFile = join(GIT_DIR, file)
+        toFile = path(join(GIT_DIR, file))
         mkdirs(toFile)
         removeFile(toFile)
         cc_exec(['get','-to', toFile, cc_file(file, version)])
@@ -222,10 +222,10 @@ class Changeset(object):
 
 class Uncataloged(Changeset):
     def add(self, files):
-        dir = cc_file(self.file, self.version)
+        dir = path(cc_file(self.file, self.version))
         diff = cc_exec(['diff', '-diff_format', '-pred', dir], errors=False)
         def getFile(line):
-            return join(self.file, line[2:max(line.find('  '), line.find(os.sep + ' '))])
+            return join(self.file, line[2:max(line.find('  '), line.find(FS + ' '))])
         for line in diff.split('\n'):
             sym = line.find(' -> ')
             if sym >= 0:
