@@ -114,6 +114,10 @@ inside the view you've specified.
 
 If this is your first rebase then please ignore this. This is expected.
 
+4. pathspec 'master_cc' did not match any file(s) known to git
+
+See Issue `8 <https://github.com/charleso/git-cc/issues/8>`_.
+
 Behind the scenes
 =================
 
