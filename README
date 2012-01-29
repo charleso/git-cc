@@ -100,6 +100,10 @@ Troubleshooting
 You're most likely running gitcc under Windows Cmd. At moment this isn't
 supported. Instead use Git Bash, which is a better console anyway. :-)
 
+If you have both msysgit and Cygwin installed then it may also be
+`this <https://github.com/charleso/git-cc/issues/10>`_
+problem.
+
 2. cleartool: Error: Not an object in a vob: ".".
 
 The Clearcase directory you've specified in init isn't correct. Please note
