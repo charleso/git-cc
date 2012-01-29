@@ -215,7 +215,12 @@ class Changeset(object):
         toFile = path(join(GIT_DIR, file))
         mkdirs(toFile)
         removeFile(toFile)
-        cc_exec(['get','-to', toFile, cc_file(file, version)])
+        try:
+            cc_exec(['get','-to', toFile, cc_file(file, version)])
+        except:
+            if len(file) < 200:
+                raise
+            debug("Ignoring %s as it may be related to https://github.com/charleso/git-cc/issues/9" % file)
         if not exists(toFile):
             git_exec(['checkout', 'HEAD', toFile])
         else:
