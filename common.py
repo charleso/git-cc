@@ -112,6 +112,8 @@ class GitConfigParser():
         return self.get(name, default).split('|')
     def getInclude(self):
         return self.getCore('include', '.').split('|')
+    def getExclude(self):
+        return self.getCore('exclude', '.').split('|')
     def getBranches(self):
         return self.getList('branches', 'main')
     def getExtraBranches(self):

@@ -66,6 +66,7 @@ eg. .git/gitcc
 
 [core]
 include = FolderA|FolderB
+exclude = FolderA/sub/folder|FolderB/other/file
 debug = False
 type = UCM
 [master]

@@ -210,6 +210,8 @@ class Changeset(object):
     def _add(self, file, version):
         if not cache.update(CCFile(file, version)):
             return
+        if [e for e in cfg.getExclude() if file.startswith(e)]:
+            return
         toFile = path(join(GIT_DIR, file))
         mkdirs(toFile)
         removeFile(toFile)
