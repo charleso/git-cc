@@ -2,7 +2,7 @@
 
 from common import *
 from clearcase import cc
-from status import Modify, Add, Delete, Rename
+from status import Modify, Add, Delete, Rename, SymLink
 import filecmp
 from os import listdir
 from os.path import isdir
@@ -53,12 +53,17 @@ def getStatuses(id, initial):
     status = git_exec(cmd)
     status = status.strip()
     status = status.strip("\x00")
-    types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add}
+    types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add, 'S':SymLink}
     list = []
     split = status.split('\x00')
     while len(split) > 1:
         char = split.pop(0)[0] # first char
         args = [split.pop(0)]
+        # check if file is really a symlink
+        cmd = ['ls-tree', '-z', id, '--', args[0]]
+        if git_exec(cmd).split(' ')[0] == '120000':
+            char = 'S'
+            args.append(id)
         if char == 'R':
             args.append(split.pop(0))
         elif char == 'C':

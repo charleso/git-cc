@@ -61,3 +61,19 @@ class Rename(Status):
         t.checkedout.remove(self.old)
         t.add(self.new)
         self.cat()
+
+class SymLink(Status):
+    def __init__(self, files):
+        self.setFile(files[0])
+        id = files[1]
+        self.target = git_exec(['cat-file', 'blob', getBlob(id, self.file)], decode=False)
+        if exists(join(CC_DIR, self.file)):
+            self.rmfirst=True
+        else:
+            self.rmfirst=False
+    def stage(self, t):
+        self.stageDirs(t)
+    def commit(self, t):
+        if self.rmfirst:
+            cc_exec(['rm', self.file])
+        cc_exec(['ln', '-s', self.target, self.file])
