@@ -15,15 +15,18 @@ ARGS = {
     'force': 'ignore conflicts and check-in anyway',
     'no_deliver': 'do not deliver in UCM mode',
     'initial': 'checkin everything from the beginning',
+    'all': 'checkin all parents, not just the first',
 }
 
-def main(force=False, no_deliver=False, initial=False):
+def main(force=False, no_deliver=False, initial=False, all=False):
     validateCC()
     global IGNORE_CONFLICTS
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
-    log = ['log', '-z', '--first-parent', '--reverse', '--pretty=format:'+ LOG_FORMAT ]
+    log = ['log', '-z', '--reverse', '--pretty=format:'+ LOG_FORMAT ]
+    if not all:
+        log.append('--first-parent')
     if not initial:
         log.append(CI_TAG + '..')
     log = git_exec(log)
