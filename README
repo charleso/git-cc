@@ -57,6 +57,11 @@ gitcc rebase --dry-run
 
 Prints out the list of commits and modified files that are pending in clearcase.
 
+To synchronise just a portion of your git history (instead of from the
+very first commit to HEAD), mark the start point with the command:
+
+gitcc tag <commit>
+
 Configuration
 =============
 
