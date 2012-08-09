@@ -243,7 +243,10 @@ class Uncataloged(Changeset):
             elif line.startswith('>'):
                 added = getFile(line)
                 cc_added = join(CC_DIR, added)
-                if not exists(cc_added) or isdir(cc_added) or added in files:
+                if isdir(cc_added) or added in files:
+                    continue
+                if not exists(cc_added):
+                    open(cc_added, 'w').close()
                     continue
                 history = cc_exec(['lshistory', '-fmt', '%o%m|%Nd|%Vn\\n', added], errors=False)
                 if not history:
