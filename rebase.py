@@ -43,7 +43,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         print(history)
     else:
         cs = parseHistory(history)
-        cs.sort(key = lambda x: x.date)
+        cs = reversed(cs)
         cs = mergeHistory(cs)
         if dry_run:
             return printGroups(cs)
