@@ -62,6 +62,14 @@ very first commit to HEAD), mark the start point with the command:
 
 gitcc tag <commit>
 
+To specify an existing Clearcase label while checking in, in order to let your
+dynamic view show the version of the element(s) just checked in if your
+confspec is configured accordingly, use the command:
+
+gitcc checkin --cclabel=YOUR_EXISTING_CC_LABEL
+
+Note that the CC label will be moved to the new version of the element, if it is already used.
+
 Configuration
 =============
 
