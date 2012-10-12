@@ -22,6 +22,8 @@ class Status:
             dir = self.dirs.pop();
             if not exists(join(CC_DIR, dir)):
                 cc_exec(['mkelem', '-nc', '-eltype', 'directory', dir])
+                if t.cc_label:
+                    cc_exec(['mklabel', '-nc', t.cc_label, dir])
                 t.add(dir)
 
 class Modify(Status):
@@ -37,6 +39,8 @@ class Add(Status):
         self.commitDirs(t)
         self.cat()
         cc_exec(['mkelem', '-nc', self.file])
+        if t.cc_label:
+            cc_exec(['mklabel', '-nc', t.cc_label, self.file])
         t.add(self.file)
 
 class Delete(Status):

@@ -10,17 +10,22 @@ import cache, reset
 
 IGNORE_CONFLICTS=False
 LOG_FORMAT = '%H%x01%s%n%b'
+CC_LABEL = ''
 
 ARGS = {
     'force': 'ignore conflicts and check-in anyway',
     'no_deliver': 'do not deliver in UCM mode',
     'initial': 'checkin everything from the beginning',
     'all': 'checkin all parents, not just the first',
+    'cclabel': 'optionally specify an existing Clearcase label type to apply to each element checked in',
 }
 
-def main(force=False, no_deliver=False, initial=False, all=False):
+def main(force=False, no_deliver=False, initial=False, all=False, cclabel=''):
     validateCC()
     global IGNORE_CONFLICTS
+    global CC_LABEL
+    if cclabel:
+        CC_LABEL=cclabel
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
@@ -92,11 +97,14 @@ def checkout(stats, comment, initial):
 class ITransaction(object):
     def __init__(self, comment):
         self.checkedout = []
+        self.cc_label = CC_LABEL
         cc.mkact(comment)
     def add(self, file):
         self.checkedout.append(file)
     def co(self, file):
         cc_exec(['co', '-reserved', '-nc', file])
+        if CC_LABEL:
+            cc_exec(['mklabel', '-replace', '-nc', CC_LABEL, file])
         self.add(file)
     def stageDir(self, file):
         file = file if file else '.'
