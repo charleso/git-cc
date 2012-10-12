@@ -25,7 +25,7 @@ def main(force=False, no_deliver=False, initial=False, all=False, cclabel=''):
     global IGNORE_CONFLICTS
     global CC_LABEL
     if cclabel:
-	    CC_LABEL=cclabel
+        CC_LABEL=cclabel
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
