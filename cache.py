@@ -83,7 +83,7 @@ class CCFile(object):
 
 class CCFile2(CCFile):
     def __init__(self, line):
-        [file, version] = line.split('@@')
+        [file, version] = line.rsplit('@@', 1)
         super(CCFile2, self).__init__(file, version)
 
 class Version(object):
