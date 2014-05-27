@@ -253,7 +253,7 @@ class Uncataloged(Changeset):
                     return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2], True)
                 versions = list(filter(f, list(map(lambda x: x.split('|'), history.split('\n')))))
                 if not versions:
-                    print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)  
+                    print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)
                     continue
                 self._add(added, versions[0][2].strip())
 
