@@ -265,16 +265,15 @@ class Uncataloged(Changeset):
         return self.filter_versions_by_type(versions, date, 'checkinversion')
 
     def empty_file_versions(self, versions, date):
+        versions = self.filter_versions(versions, lambda x: x[1] < date)
         return self.versions_with_branch(versions, date) or self.versions_without_branch(versions, date)
 
     def versions_with_branch(self, versions, date):
-        versions = self.filter_versions(versions, lambda x: x[1] < date)
         if len(versions) != 5:
             return False
         return self.filter_versions_by_type(versions, date, 'mkbranchversion')
 
     def versions_without_branch(self, versions, date):
-        versions = self.filter_versions(versions, lambda x: x[1] < date)
         if len(versions) != 3:
             return False
         return self.filter_versions(versions, lambda x: x[0] == 'mkelemversion')
