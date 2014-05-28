@@ -248,14 +248,50 @@ class Uncataloged(Changeset):
                 history = cc_exec(['lshistory', '-fmt', '%o%m|%Nd|%Vn\\n', added], errors=False)
                 if not history:
                     continue
+                history = filter(None, history.split('\n'))
+                all_versions = self.parse_history(history)
                 date = cc_exec(['describe', '-fmt', '%Nd', dir])
-                def f(s):
-                    return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2], True)
-                versions = list(filter(f, list(map(lambda x: x.split('|'), history.split('\n')))))
+
+                versions = self.checkin_versions(all_versions, date)
+                if not versions:
+                    print("No proper versions of '%s' file. Check if it is empty." % added)
+                    versions = self.empty_file_versions(all_versions, date)
                 if not versions:
                     print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)
                     continue
                 self._add(added, versions[0][2].strip())
+
+    def checkin_versions(self, versions, date):
+        def f(s):
+            return s[0] == 'checkinversion' and s[1] < date and filterBranches(s[2], True)
+        return self.filter_versions(versions, f)
+
+    def empty_file_versions(self, versions, date):
+        return self.versions_with_branch(versions, date) or self.versions_without_branch(versions, date)
+
+    def versions_with_branch(self, versions, date):
+        versions = self.filter_versions(versions, lambda x: x[1] < date)
+        if len(versions) != 5:
+            return False
+        return self.mkbranch_versions(versions, date)
+
+    def versions_without_branch(self, versions, date):
+        versions = self.filter_versions(versions, lambda x: x[1] < date)
+        if len(versions) != 3:
+            return False
+        return self.filter_versions(versions, lambda x: x[0] == 'mkelemversion')
+
+    def mkbranch_versions(self, versions, date):
+        def f(s):
+            return s[0] == 'mkbranchversion' and s[1] < date and filterBranches(s[2], True)
+        return self.filter_versions(versions, f)
+
+    def filter_versions(self, versions, handler):
+        return list(filter(handler, versions))
+
+    def parse_history(self, history_arr):
+        return list(map(lambda x: x.split('|'), history_arr))
+
 
 TYPES = {\
     'checkinversion': Changeset,\
