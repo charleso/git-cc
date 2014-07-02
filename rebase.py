@@ -32,7 +32,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
     if not (stash or dry_run or lshistory):
         checkPristine()
 
-    cc_exec(["update"])
+    cc_exec(["update"], errors=False)
 
     since = getSince()
     cache.start()
