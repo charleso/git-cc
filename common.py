@@ -59,9 +59,16 @@ def popen(exe, cmd, cwd, env=None, decode=True, errors=True, encoding=None):
     if encoding == None:
         encoding = ENCODING
     if errors and pipe.returncode > 0:
-        raise Exception((stderr + stdout).decode(encoding, "ignore"))
-    return stdout if not decode else stdout.decode(encoding, "ignore")
+        raise Exception(decodeString(encoding, stderr + stdout))
+    return stdout if not decode else decodeString(encoding, stdout)
 
+def decodeString(encoding, encodestr):
+    try:
+        return encodestr.decode(encoding)
+    except UnicodeDecodeError as e:
+        print >> sys.stderr, encodestr, ":", e
+        return encodestr.decode(encoding, "ignore")
+    
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
 
