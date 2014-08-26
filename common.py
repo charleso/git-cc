@@ -57,8 +57,8 @@ def popen(exe, cmd, cwd, env=None, decode=True, errors=True):
     pipe = Popen(cmd, cwd=cwd, stdout=PIPE, stderr=PIPE, env=env)
     (stdout, stderr) = pipe.communicate()
     if errors and pipe.returncode > 0:
-        raise Exception((stderr + stdout).decode(ENCODING))
-    return stdout if not decode else stdout.decode(ENCODING)
+        raise Exception((stderr + stdout).decode(ENCODING, "ignore"))
+    return stdout if not decode else stdout.decode(ENCODING, "ignore")
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
