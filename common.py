@@ -44,21 +44,23 @@ def debug(string):
         print(string)
 
 def git_exec(cmd, **args):
-    return popen('git', cmd, GIT_DIR, **args)
+    return popen('git', cmd, GIT_DIR, encoding='UTF-8', **args)
 
 def cc_exec(cmd, **args):
     return popen('cleartool', cmd, CC_DIR, **args)
 
-def popen(exe, cmd, cwd, env=None, decode=True, errors=True):
+def popen(exe, cmd, cwd, env=None, decode=True, errors=True, encoding=None):
     cmd.insert(0, exe)
     if DEBUG:
         f = lambda a: a if not a.count(' ') else '"%s"' % a
         debug('> ' + ' '.join(map(f, cmd)))
     pipe = Popen(cmd, cwd=cwd, stdout=PIPE, stderr=PIPE, env=env)
     (stdout, stderr) = pipe.communicate()
+    if encoding == None:
+        encoding = ENCODING
     if errors and pipe.returncode > 0:
-        raise Exception((stderr + stdout).decode(ENCODING, "ignore"))
-    return stdout if not decode else stdout.decode(ENCODING, "ignore")
+        raise Exception((stderr + stdout).decode(encoding, "ignore"))
+    return stdout if not decode else stdout.decode(encoding, "ignore")
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
