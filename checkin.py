@@ -29,7 +29,7 @@ def main(force=False, no_deliver=False, initial=False, all=False, cclabel=''):
     if force:
         IGNORE_CONFLICTS=True
     cc_exec(['update', '.'], errors=False)
-    log = ['log', '-z', '--reverse', '--pretty=format:'+ LOG_FORMAT ]
+    log = ['log', '-z', '--reverse', '--topo-order', '--pretty=format:'+ LOG_FORMAT ]
     if not all:
         log.append('--first-parent')
     if not initial:
