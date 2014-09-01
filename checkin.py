@@ -2,7 +2,7 @@
 
 from common import *
 from clearcase import cc
-from status import Modify, Add, Delete, Rename, SymLink
+from status import Modify, Add, Delete, Rename, RenameModify, SymLink
 import filecmp
 from os import listdir
 from os.path import isdir
@@ -50,6 +50,8 @@ def main(force=False, no_deliver=False, initial=False, all=False, cclabel=''):
         reset.main('HEAD')
 
 def getStatuses(id, initial):
+    modifylist = None
+
     cmd = ['diff','--name-status', '-M', '-z', '--ignore-submodules', '%s^..%s' % (id, id)]
     if initial:
         cmd = cmd[:-1]
@@ -58,7 +60,7 @@ def getStatuses(id, initial):
     status = git_exec(cmd)
     status = status.strip()
     status = status.strip("\x00")
-    types = {'M':Modify, 'R':Rename, 'D':Delete, 'A':Add, 'C':Add, 'S':SymLink}
+    types = {'M':Modify, 'R':Rename, 'RM': RenameModify, 'D':Delete, 'A':Add, 'C':Add, 'S':SymLink}
     list = []
     split = status.split('\x00')
     while len(split) > 1:
@@ -71,6 +73,10 @@ def getStatuses(id, initial):
             args.append(id)
         if char == 'R':
             args.append(split.pop(0))
+            if (modifylist == None):
+                modifylist = getFileModifyInfo(id)
+            if (args[1] in modifylist):
+                char = "RM"
         elif char == 'C':
             args = [split.pop(0)]
         if args[0] == cache.FILE:
@@ -79,6 +85,20 @@ def getStatuses(id, initial):
         type.id = id
         list.append(type)
     return list
+
+def getFileModifyInfo(id):
+    modifyFileList = []
+    cmd = ['diff', '--numstat', "-M", '--diff-filter=R', '-z', '--ignore-submodules', '%s^..%s' % (id, id)]
+    status = git_exec(cmd)
+    split = status.split('\x00')
+    while len(split) > 3:
+        changes = split.pop(0).split()
+        oldname = split.pop(0)
+        newname = split.pop(0)
+        if int(changes[0]) != 0 or int(changes[1]) != 0:
+            modifyFileList.append(newname)
+    return modifyFileList 
+    
 
 def checkout(stats, comment, initial):
     """Poor mans two-phase commit"""
