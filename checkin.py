@@ -64,7 +64,8 @@ def getStatuses(id, initial):
     list = []
     split = status.split('\x00')
     while len(split) > 1:
-        char = split.pop(0)[0] # first char
+        statusstr = split.pop(0)
+        char = statusstr[0] # first char
         args = [split.pop(0)]
         # check if file is really a symlink
         cmd = ['ls-tree', '-z', id, '--', args[0]]
@@ -73,9 +74,7 @@ def getStatuses(id, initial):
             args.append(id)
         if char == 'R':
             args.append(split.pop(0))
-            if (modifylist == None):
-                modifylist = getFileModifyInfo(id)
-            if (args[1] in modifylist):
+            if (statusstr[1:] != "100"):
                 char = "RM"
         elif char == 'C':
             args = [split.pop(0)]
@@ -86,19 +85,6 @@ def getStatuses(id, initial):
         list.append(type)
     return list
 
-def getFileModifyInfo(id):
-    modifyFileList = []
-    cmd = ['diff', '--numstat', "-M", '--diff-filter=R', '-z', '--ignore-submodules', '%s^..%s' % (id, id)]
-    status = git_exec(cmd)
-    split = status.split('\x00')
-    while len(split) > 3:
-        changes = split.pop(0).split()
-        oldname = split.pop(0)
-        newname = split.pop(0)
-        if int(changes[0]) != 0 or int(changes[1]) != 0:
-            modifyFileList.append(newname)
-    return modifyFileList 
-    
 
 def checkout(stats, comment, initial):
     """Poor mans two-phase commit"""
