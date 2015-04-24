@@ -259,28 +259,12 @@ class Uncataloged(Changeset):
 
                 versions = self.checkin_versions(actual_versions)
                 if not versions:
-                    print("No proper versions of '%s' file. Check if it is empty." % added)
-                    versions = self.empty_file_versions(actual_versions)
-                if not versions:
                     print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)
                     continue
                 self._add(added, versions[0][2].strip())
 
     def checkin_versions(self, versions):
         return self.filter_versions_by_type(versions, 'checkinversion')
-
-    def empty_file_versions(self, versions):
-        return self.versions_with_branch(versions) or self.versions_without_branch(versions)
-
-    def versions_with_branch(self, versions):
-        if len(versions) != 5:
-            return False
-        return self.filter_versions_by_type(versions, 'mkbranchversion')
-
-    def versions_without_branch(self, versions):
-        if len(versions) != 3:
-            return False
-        return self.filter_versions(versions, lambda x: x[0] == 'mkelemversion')
 
     def filter_versions_by_type(self, versions, type):
         def f(s):
