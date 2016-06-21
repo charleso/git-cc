@@ -1,5 +1,7 @@
 """Copy files from Clearcase to Git manually"""
 
+import filecmp
+
 from common import *
 from cache import *
 import os, shutil, stat
@@ -25,20 +27,26 @@ def main(cache=False):
                 if fnmatch(file, glob):
                     copy(join(reldir, file))
 
-def copy(file):
-    newFile = join(GIT_DIR, file)
-    debug('Copying %s' % newFile)
-    mkdirs(newFile)
-    shutil.copy(join(CC_DIR, file), newFile)
-    os.chmod(newFile, stat.S_IREAD | stat.S_IWRITE)
+
+def copy(file, src_dir=CC_DIR, dst_dir=GIT_DIR):
+    src_file = join(src_dir, file)
+    dst_file = join(dst_dir, file)
+    skip_file = os.path.exists(dst_file) and filecmp.cmp(src_file, dst_file)
+    if not skip_file:
+        debug('Copying to %s' % dst_file)
+        mkdirs(dst_file)
+        shutil.copy2(src_file, dst_file)
+        os.chmod(dst_file, stat.S_IREAD | stat.S_IWRITE)
+        return True
+    return False
 
 def syncCache():
     cache1 = Cache(GIT_DIR)
     cache1.start()
-    
+
     cache2 = Cache(GIT_DIR)
     cache2.initial()
-    
+
     for path in cache2.list():
         if not cache1.contains(path):
             cache1.update(path)
