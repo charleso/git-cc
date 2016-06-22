@@ -18,6 +18,7 @@ def main(cache=False):
         return syncCache()
     glob = '*'
     base = abspath(CC_DIR)
+    copied_file_count = 0
     for i in cfg.getInclude():
         for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):
             reldir = dirpath[len(base)+1:]
@@ -25,7 +26,9 @@ def main(cache=False):
                 continue
             for file in filenames:
                 if fnmatch(file, glob):
-                    copy(join(reldir, file))
+                    if copy(join(reldir, file)):
+                        copied_file_count += 1
+    return copied_file_count
 
 
 def copy(file, src_dir=CC_DIR, dst_dir=GIT_DIR):
