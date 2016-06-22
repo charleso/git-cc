@@ -20,6 +20,30 @@ have made gitcc init set core.autocrlf to false. This is only relevant for
 Windows users. Don't try changing this after your first commit either as it
 will only make matters worse. My apologies to anyone that is stung by this.
 
+## Installation
+
+The easiest way to install git-cc, is to use the Python package installer pip
+and install it directly from its GitHub repo. Execute the following command on
+the command prompt to install the latest version:
+
+    C:\> pip install git+git://github.com/charleso/git-cc.git#egg=git_cc
+
+If you installed Python from python.org, pip is included with Python 2 >= 2.7.9
+and Python 3 >= 3.4. If you do not have pip, [this section] [pip-installation]
+from the Python Packaging User Guide describes how to install it.
+
+In case pip or git cannot reach GitHub, maybe such access is not allowed in the
+place where you work, you can download the [zip file] [zip-file] with the
+latest version from the GitHub repo. Unzip it and use pip to execute the
+following command in the root of the directory tree:
+
+    C:\master> pip install .
+    
+Finally, if you cannot use pip, you can also use the old-skool approach to
+install Python packages:
+
+    C:\master> python setup.py install
+
 ## Workflow
 
 Initialise:
@@ -146,3 +170,6 @@ a config spec change. This is quite sad and means that the imported history is
 not a true one and so rolling back to older revisions will be somewhat limited
 as it is likely everything won't compile. Other Clearcase importers seem
 restricted by the same problem, but none-the-less it is most frustrating. Grr!
+
+[pip-installation]: https://packaging.python.org/en/latest/installing/#requirements-for-installing-packages
+[zip-file]: https://github.com/charleso/git-cc/archive/master.zip
