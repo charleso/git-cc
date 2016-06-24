@@ -4,7 +4,6 @@ from os.path import join, dirname, exists, isdir
 import os, stat
 from common import *
 from datetime import datetime, timedelta
-from users import users, mailSuffix
 from fnmatch import fnmatch
 from clearcase import cc
 from cache import getCache, CCFile
@@ -176,7 +175,7 @@ class Group:
         def getUserEmail(user):
             email = search('<.*@.*>', str(user))
             if email == None:
-                return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), mailSuffix)
+                return '<%s@%s>' % (user.lower().replace(' ','.').replace("'", ''), users.mailSuffix)
             else:
                 return email.group(0)
         files = []
@@ -186,7 +185,7 @@ class Group:
             file.add(files)
         cache.write()
         env = os.environ
-        user = users.get(self.user, self.user)
+        user = users.users.get(self.user, self.user)
         env['GIT_AUTHOR_DATE'] = env['GIT_COMMITTER_DATE'] = str(getCommitDate(self.date))
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = getUserName(user)
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = str(getUserEmail(user))
