@@ -1,15 +1,17 @@
-from distutils import __version__
-v30 = __version__.find("3.") == 0
-
 from subprocess import Popen, PIPE
 import imp
 import os
 import sys
 from os.path import join, exists, abspath, dirname
-if v30:
+
+# In which package module SafeConfigParser is available and under what name
+# depends on the Python version
+if sys.version_info[0] == 2:
+    from ConfigParser import SafeConfigParser
+elif sys.version_info[0] == 3 and sys.version_info[1] <= 2:
     from configparser import SafeConfigParser
 else:
-    from ConfigParser import SafeConfigParser
+    from configparser import ConfigParser as SafeConfigParser
 
 IS_CYGWIN = sys.platform == 'cygwin'
 
