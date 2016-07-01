@@ -1,18 +1,29 @@
 #!/usr/bin/env python
-import sys, inspect
+import inspect
+import sys
+
 from optparse import OptionParser
-import rebase, checkin, init, sync, reset, tag, update
+
+import checkin
+import init
+import rebase
+import reset
+import sync
+import tag
+import update
 
 commands = [
     init, rebase, checkin, sync, reset, tag, update
 ]
 
+
 def main():
     args = sys.argv[1:]
     for cmd in commands:
-        if args and cmd.__name__ == args[0]:
+        if args and get_module_name(cmd) == args[0]:
             return invoke(cmd, args)
     usage()
+
 
 def invoke(cmd, args):
     _args, _, _, defaults = inspect.getargspec(cmd.main)
@@ -26,7 +37,7 @@ def invoke(cmd, args):
             'help': cmd.ARGS[name],
             'dest': name,
         }
-        if default == False:
+        if not default:
             option['action'] = "store_true"
         name = name.replace('_', '-')
         parser.add_option('--' + name, **option)
@@ -37,12 +48,27 @@ def invoke(cmd, args):
         args.append(getattr(options, name))
     cmd.main(*args)
 
+
 def usage():
     print('usage: gitcc COMMAND [ARGS]\n')
     width = 11
     for cmd in commands:
-        print('    %s %s' % (cmd.__name__.ljust(width), cmd.__doc__.split('\n')[0]))
+        print('    %s %s' % (get_module_name(cmd).ljust(width),
+                             cmd.__doc__.split('\n')[0]))
     sys.exit(2)
+
+
+def get_module_name(module):
+    """Return the name of the given module, without the package name.
+
+    For example, if the given module is checkin, the module name is
+    "git_cc.checkin" and without the package name is "checkin".
+
+    Note that the given module should already have been imported.
+
+    """
+    _, _, module_name = module.__name__.rpartition('.')
+    return module_name
 
 if __name__ == '__main__':
     main()

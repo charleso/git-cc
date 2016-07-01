@@ -1,0 +1,2 @@
+[core]
+users_module_path: users.py

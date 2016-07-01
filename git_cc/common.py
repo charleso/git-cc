@@ -1,13 +1,17 @@
-from distutils import __version__
-v30 = __version__.find("3.") == 0
-
 from subprocess import Popen, PIPE
-import os, sys
+import imp
+import os
+import sys
 from os.path import join, exists, abspath, dirname
-if v30:
+
+# In which package module SafeConfigParser is available and under what name
+# depends on the Python version
+if sys.version_info[0] == 2:
+    from ConfigParser import SafeConfigParser
+elif sys.version_info[0] == 3 and sys.version_info[1] <= 2:
     from configparser import SafeConfigParser
 else:
-    from ConfigParser import SafeConfigParser
+    from configparser import ConfigParser as SafeConfigParser
 
 IS_CYGWIN = sys.platform == 'cygwin'
 
@@ -15,6 +19,32 @@ if IS_CYGWIN:
     FS = '\\'
 else:
     FS = os.sep
+
+
+class FakeUsersModule():
+
+    def __init__(self):
+        self.users = {}
+        self.mailSuffix = ""
+
+
+def get_users_module(path):
+    """Load the module at the given path and return it.
+
+    The path should point to a module that defines at its top-level a users
+    dictionary ".users" and a mail suffix ".mailSuffix".
+
+    If no file exists at the given path, this function returns an object with
+    an empty dictionary for ".users" and the empty string for ".mailSuffix".
+
+    """
+
+    users_module = FakeUsersModule()
+    if os.path.exists(path):
+        users_module_path = os.path.join(path)
+        users_module = imp.load_source("users", users_module_path)
+
+    return users_module
 
 CFG_CC = 'clearcase'
 CC_DIR = None
@@ -68,7 +98,7 @@ def decodeString(encoding, encodestr):
     except UnicodeDecodeError as e:
         print >> sys.stderr, encodestr, ":", e
         return encodestr.decode(encoding, "ignore")
-    
+
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
 
@@ -98,10 +128,12 @@ def getCurrentBranch():
 
 class GitConfigParser():
     CORE = 'core'
-    def __init__(self, branch):
+    def __init__(self, branch, config_file=None):
         self.section = branch
-        self.file = join(GIT_DIR, '.git', 'gitcc')
-        self.parser = SafeConfigParser();
+        self.file = config_file
+        if not self.file:
+            self.file = join(GIT_DIR, '.git', 'gitcc')
+        self.parser = SafeConfigParser()
         self.parser.add_section(self.section)
     def set(self, name, value):
         self.parser.set(self.section, name, value)
@@ -128,6 +160,28 @@ class GitConfigParser():
     def getExtraBranches(self):
         return self.getList('_branches', 'main')
 
+    def getUsersModulePath(self):
+        """Return the absolute path of the users module.
+
+        In the configuration file, the path can be specified by an absolute
+        path but also by a relative path. If it is a relative path, the path is
+        taken relative to the directory that contains the configuration file.
+
+        If the configuration file does not specify the path to the users
+        module, this method returns the empty string.
+
+        """
+        abs_path = ''
+        path = self.getCore('users_module_path')
+        if path is not None:
+            if os.path.isabs(path):
+                abs_path = path
+            else:
+                config_dir = os.path.dirname(self.file)
+                abs_path = os.path.join(config_dir, path)
+        return abs_path
+
+
 def write(file, blob):
     _write(file, blob)
 
@@ -148,7 +202,7 @@ def removeFile(file):
 def validateCC():
     if not CC_DIR:
         fail("No 'clearcase' variable found for branch '%s'" % CURRENT_BRANCH)
-        
+
 def path(path, args='-m'):
     if IS_CYGWIN:
         return os.popen('cygpath %s "%s"' %(args, path)).readlines()[0].strip()
@@ -165,4 +219,4 @@ CC_DIR = path(cfg.get(CFG_CC))
 DEBUG = cfg.getCore('debug', True)
 CC_TAG = CURRENT_BRANCH + '_cc'
 CI_TAG = CURRENT_BRANCH + '_ci'
-
+users = get_users_module(cfg.getUsersModulePath())
