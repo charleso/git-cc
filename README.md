@@ -208,6 +208,77 @@ following command:
 
     git-cc $ pip install -r requirements.txt
 
+### Testing
+
+git-cc comes with a small suite of unit tests, which you can find in
+subdirectory tests/. There are several ways to run the unit tests. For example,
+you can let Python search for the unit tests and run them in the current Python
+environment. To do so, execute the following command *from the root of the
+repo*:
+
+    git-cc $ python -m unittest discover tests/
+
+This will result in output such as this:
+
+    ........
+    ----------------------------------------------------------------------
+    Ran 8 tests in 0.002s
+     
+    OK
+
+If you run the unit tests from the root of the repo, all unit tests will be
+able to import the git-cc package even when it is not installed. If you run the
+unit tests from another directory, you have to install git_cc first.
+
+Another way to run the unit test is to use the Python tool [tox] [tox]. tox
+does more than just run the unit tests:
+
+- it creates a source distribution of your Python package for each Python
+  interpreter that you specify,
+- it creates a virtualenv for each Python interpreter you specify, and
+- for each virtualenv, installs the package using the source distribution and
+  runs the unit tests.
+
+If you execute tox from the root of the repo, its output will look like this:
+
+    git-cc $ tox
+    GLOB sdist-make: /home/a-user/repos/github.com/git-cc/setup.py
+    py27 inst-nodeps: /home/a-user/repos/github.com/git-cc/.tox/dist/git_cc-1.0.0.dev0.zip
+    py27 installed: git-cc==1.0.0.dev0
+    py27 runtests: PYTHONHASHSEED='2322284388'
+    py27 runtests: commands[0] | python -m unittest discover tests/
+    ........
+    ----------------------------------------------------------------------
+    Ran 8 tests in 0.003s
+     
+    OK
+    py34 inst-nodeps: /home/a-user/repos/github.com/git-cc/.tox/dist/git_cc-1.0.0.dev0.zip
+    py34 installed: git-cc==1.0.0.dev0
+    py34 runtests: PYTHONHASHSEED='2322284388'
+    py34 runtests: commands[0] | python -m unittest discover tests/
+    ........
+    ----------------------------------------------------------------------
+    Ran 8 tests in 0.002s
+     
+    OK
+
+As the output shows, tox runs the tests in virtualenvs for Python 2.7 and
+Python 3.4. This has been specified in file tox.ini, which you can find in the
+root of the repo:
+
+    [tox]
+    envlist = py27,py34
+    [testenv]
+    commands=python -m unittest discover tests/
+
+This only works if you have both interpreters installed. If you want to support
+other Python versions, you have to update the ini file accordingly.
+
+tox makes it easy to test your Python package in multiple Python
+environments. Running tox takes more time than just running the unit tests in
+your current environment. As such, developers run it less often, for example
+only before a new release or pull request.
+
 ### Changes and versioning
 
 The repo contains a CHANGES file that lists the changes for each git-cc release
@@ -304,6 +375,7 @@ When the command is done, the beginning of the CHANGES file has changed to this:
     - Fixes issue Z
 
 [pip-installation]: https://packaging.python.org/en/latest/installing/#requirements-for-installing-packages
+[tox]: http://tox.readthedocs.io/en/latest/
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
 [zest-releaser]: http://zestreleaser.readthedocs.io/en/latest/index.html
 [zip-file]: https://github.com/charleso/git-cc/archive/master.zip
