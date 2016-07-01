@@ -1,6 +1,9 @@
 # Emacs
 *~
+*#
 
 # Python
-users.py
 *.pyc
+build/
+dist/
+git_cc.egg-info/
