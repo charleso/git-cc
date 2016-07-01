@@ -191,5 +191,119 @@ not a true one and so rolling back to older revisions will be somewhat limited
 as it is likely everything won't compile. Other ClearCase importers seem
 restricted by the same problem, but none-the-less it is most frustrating. Grr!
 
+## For developers
+
+This section provides information for git-cc developers.
+
+### Required packages
+
+To develop git-cc, several Python packages are required that are not part of
+the standard Python distribution and that you have to install separately. As
+these packages might conflict with your system Python environment, you are
+strongly advised to set up a [virtualenv] [virtualenv] for your work.
+
+The file 'requirements.txt', which is in the root of the repo, lists the Python
+packages that are needed for development. To install these packages, use the
+following command:
+
+    git-cc $ pip install -r requirements.txt
+
+### Changes and versioning
+
+The repo contains a CHANGES file that lists the changes for each git-cc release
+and for the version currently under development. This file has a specific
+format that best can be explained by an example. Assume the CHANGES file looks
+like this - note that the actual CHANGES file for git-cc looks different:
+
+    Changelog
+    =========
+
+    1.2.0 (unreleased)
+    ------------------
+    
+    - Fixes issue Z
+
+    1.1.0 (2016-02-03)
+    ------------------
+    
+    - Adds support for feature Y
+    - Updates documentation of feature X
+
+    1.0.0 (2016-01-03)
+    ------------------
+     
+    - Started versioning at 1.0.0
+
+The file mentions that versions 1.0.0 and 1.1.0 have been released and that the
+next version will be 1.2.0.
+
+The process of putting a new release out can be cumbersome and error prone: you
+have to update the CHANGES file and setup.py, create a tag, update the CHANGES
+file and setup.py again for the development version, etc. For git-cc, the
+process of creating a release is fully automated using tools provided by Python
+package [zest.releaser] [zest-releaser].
+
+To show how zest.releaser works, the following is the (sanitized) output of the
+zest.releaser command 'fullrelease' with the example CHANGES file:
+
+    # execute fullrelease on the command-line
+    git-cc $ fullrelease
+    
+    # the command outputs the beginning of the CHANGES file 
+    Changelog entries for version 1.2.0:
+     
+    1.2.0 (unreleased)
+    ------------------
+     
+    - Fixes issue Z
+     
+    1.1.0 (2016-02-03)
+    ------------------
+    # the command proposes to set the release version to 1.2.0
+    Enter version [1.2.0]:    
+    # pressed RETURN to accept the proposed release version
+    # the command automatically updates the CHANGES file and the version number used by setup.py
+    
+    OK to commit this (Y/n)?
+    # pressed RETURN to commit the changes
+    
+    Tag needed to proceed, you can use the following command:
+    git tag 1.2.0 -m "Tagging 1.2.0"
+    Run this command (Y/n)?
+    # pressed RETURN to tag the release
+    
+    Check out the tag (for tweaks or pypi/distutils server upload) (Y/n)? n
+    # answered 'n' and pressed RETURN to not check out the tag
+    
+    Current version is 1.2.0
+    # the command proposes to set the development version to 1.2.1dev0
+    Enter new development version ('.dev0' will be appended) [1.2.1]: 
+    # pressed RETURN to accept the proposed development version
+    # the command automatically updates the CHANGES file and the version number used by setup.py
+    
+    OK to commit this (Y/n)? 
+    # pressed RETURN to commit the changes
+
+    OK to push commits to the server? (Y/n)? n
+    # answered 'n' and pressed RETURN to not push the latest commit yet
+
+When the command is done, the beginning of the CHANGES file has changed to this:
+
+    Changelog
+    =========
+     
+    1.2.1 (unreleased)
+    ------------------
+     
+    - Nothing changed yet.
+     
+     
+    1.2.0 (2016-07-01)
+    ------------------
+     
+    - Fixes issue Z
+
 [pip-installation]: https://packaging.python.org/en/latest/installing/#requirements-for-installing-packages
+[virtualenv]: https://virtualenv.pypa.io/en/stable/
+[zest-releaser]: http://zestreleaser.readthedocs.io/en/latest/index.html
 [zip-file]: https://github.com/charleso/git-cc/archive/master.zip
