@@ -1,0 +1,2 @@
+include LICENSE *.md setup.py setup.cfg
+recursive-include git_cc *.py

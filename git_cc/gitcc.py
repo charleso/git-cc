@@ -11,9 +11,10 @@ import reset
 import sync
 import tag
 import update
+import version
 
 commands = [
-    init, rebase, checkin, sync, reset, tag, update
+    init, rebase, checkin, sync, reset, tag, update, version
 ]
 
 
