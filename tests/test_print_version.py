@@ -2,10 +2,13 @@ import sys
 import unittest
 
 from contextlib import contextmanager
-from cStringIO import StringIO
-
 from git_cc import __version__
 from git_cc import version
+
+if sys.version_info[0] == 2:
+    from StringIO import StringIO
+else:
+    from io import StringIO
 
 
 @contextmanager
