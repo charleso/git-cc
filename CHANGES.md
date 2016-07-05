@@ -4,8 +4,9 @@ Changelog for git-cc
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Supports [tox] [tox] to package and run tests in virtualenvs.
 
+[tox]: http://tox.readthedocs.io/en/latest/
 
 1.0.0 (2016-07-03)
 ------------------
