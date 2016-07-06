@@ -2,8 +2,8 @@
 
 import filecmp
 
-from common import *
-from cache import *
+from .common import *
+from .cache import *
 import os, shutil, stat
 from os.path import join, abspath, isdir
 from fnmatch import fnmatch

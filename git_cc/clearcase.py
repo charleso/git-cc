@@ -1,4 +1,4 @@
-from common import *
+from .common import *
 
 class Clearcase:
     def rebase(self):
