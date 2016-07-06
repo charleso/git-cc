@@ -34,7 +34,8 @@ def main(cache=False):
 def copy(file, src_dir=CC_DIR, dst_dir=GIT_DIR):
     src_file = join(src_dir, file)
     dst_file = join(dst_dir, file)
-    skip_file = os.path.exists(dst_file) and filecmp.cmp(src_file, dst_file)
+    skip_file = os.path.exists(dst_file) and \
+        filecmp.cmp(src_file, dst_file, shallow=False)
     if not skip_file:
         debug('Copying to %s' % dst_file)
         mkdirs(dst_file)
