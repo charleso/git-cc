@@ -51,9 +51,12 @@ def syncCache():
     cache2 = Cache(GIT_DIR)
     cache2.initial()
 
+    copied_file_count = 0
     for path in cache2.list():
         if not cache1.contains(path):
             cache1.update(path)
             if not isdir(join(CC_DIR, path.file)):
-                copy(path.file)
+                if copy(path.file):
+                    copied_file_count += 1
     cache1.write()
+    return copied_file_count
