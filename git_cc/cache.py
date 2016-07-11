@@ -1,5 +1,5 @@
 from os.path import join, exists
-from common import *
+from .common import *
 
 FILE = '.gitcc'
 

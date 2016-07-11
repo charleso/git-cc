@@ -2,11 +2,11 @@
 
 from os.path import join, dirname, exists, isdir
 import os, stat
-from common import *
+from .common import *
 from datetime import datetime, timedelta
 from fnmatch import fnmatch
-from clearcase import cc
-from cache import getCache, CCFile
+from .clearcase import cc
+from .cache import getCache, CCFile
 from re import search
 
 """

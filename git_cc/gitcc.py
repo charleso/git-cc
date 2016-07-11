@@ -4,14 +4,14 @@ import sys
 
 from optparse import OptionParser
 
-import checkin
-import init
-import rebase
-import reset
-import sync
-import tag
-import update
-import version
+from . import checkin
+from . import init
+from . import rebase
+from . import reset
+from . import sync
+from . import tag
+from . import update
+from . import version
 
 commands = [
     init, rebase, checkin, sync, reset, tag, update, version

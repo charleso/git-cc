@@ -1,7 +1,9 @@
 """Copy files from Clearcase to Git manually"""
 
-from common import *
-from cache import *
+import filecmp
+
+from .common import *
+from .cache import *
 import os, shutil, stat
 from os.path import join, abspath, isdir
 from fnmatch import fnmatch
@@ -16,6 +18,7 @@ def main(cache=False):
         return syncCache()
     glob = '*'
     base = abspath(CC_DIR)
+    copied_file_count = 0
     for i in cfg.getInclude():
         for (dirpath, dirnames, filenames) in os.walk(join(CC_DIR, i)):
             reldir = dirpath[len(base)+1:]
@@ -23,25 +26,37 @@ def main(cache=False):
                 continue
             for file in filenames:
                 if fnmatch(file, glob):
-                    copy(join(reldir, file))
+                    if copy(join(reldir, file)):
+                        copied_file_count += 1
+    return copied_file_count
 
-def copy(file):
-    newFile = join(GIT_DIR, file)
-    debug('Copying %s' % newFile)
-    mkdirs(newFile)
-    shutil.copy(join(CC_DIR, file), newFile)
-    os.chmod(newFile, stat.S_IREAD | stat.S_IWRITE)
+
+def copy(file, src_dir=CC_DIR, dst_dir=GIT_DIR):
+    src_file = join(src_dir, file)
+    dst_file = join(dst_dir, file)
+    skip_file = os.path.exists(dst_file) and \
+        filecmp.cmp(src_file, dst_file, shallow=False)
+    if not skip_file:
+        debug('Copying to %s' % dst_file)
+        mkdirs(dst_file)
+        shutil.copy2(src_file, dst_file)
+        os.chmod(dst_file, stat.S_IREAD | stat.S_IWRITE)
+        return True
+    return False
 
 def syncCache():
     cache1 = Cache(GIT_DIR)
     cache1.start()
-    
+
     cache2 = Cache(GIT_DIR)
     cache2.initial()
-    
+
+    copied_file_count = 0
     for path in cache2.list():
         if not cache1.contains(path):
             cache1.update(path)
             if not isdir(join(CC_DIR, path.file)):
-                copy(path.file)
+                if copy(path.file):
+                    copied_file_count += 1
     cache1.write()
+    return copied_file_count
