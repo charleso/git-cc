@@ -1,14 +1,25 @@
 import filecmp
 import os
 import shutil
+import sys
 import stat
 import unittest
 
-
 from git_cc.sync import copy
+from git_cc.sync import output_as_dict
+from git_cc.sync import Sync
+from git_cc.sync import ClearCaseSync
+
+if sys.version_info[0] == 2:
+    from mock import Mock
+elif sys.version_info[0] == 3:
+    if sys.version_info[1] < 3:
+        from mock import Mock
+    else:
+        from unittest.mock import Mock
 
 
-class SyncTestSuite(unittest.TestCase):
+class CopyTestSuite(unittest.TestCase):
 
     def setUp(self):
 
@@ -99,3 +110,73 @@ class SyncTestSuite(unittest.TestCase):
 
         """
         filecmp._cache = {}
+
+
+class SyncTestSuite(unittest.TestCase):
+
+    def setUp(self):
+
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.dst_dir = os.path.join(self.current_dir, "sandbox")
+
+        if os.path.exists(self.dst_dir):
+            shutil.rmtree(self.dst_dir)
+
+        os.mkdir(self.dst_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.dst_dir)
+
+    def test_sync_copies_directory_tree(self):
+
+        self.src_dir = os.path.join(self.current_dir, "sync-data/simple-tree")
+
+        sync = Sync(self.src_dir, self.dst_dir)
+        sync.do_sync()
+
+        dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
+
+        self.assertEqual(dircmp.left_only, [])
+        self.assertEqual(dircmp.right_only, [])
+        self.assertEqual(dircmp.diff_files, [])
+
+    def test_clearcase_sync_copies_directory_tree(self):
+
+        self.src_dir = os.path.join(self.current_dir, "sync-data/simple-tree")
+
+        sync = ClearCaseSync(self.src_dir, self.dst_dir)
+        sync.collect_private_files = Mock(return_value={})
+        sync.do_sync()
+
+        dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
+
+        self.assertEqual(dircmp.left_only, ['lost+found'])
+        self.assertEqual(dircmp.right_only, [])
+        self.assertEqual(dircmp.diff_files, [])
+
+    def test_clearcase_sync_copies_directory_tree_without_private_files(self):
+
+        self.src_dir = os.path.join(self.current_dir, "sync-data/simple-tree")
+
+        sync = ClearCaseSync(self.src_dir, self.dst_dir)
+        sync.collect_private_files = Mock(return_value={"subdir/b.txt": 1})
+        sync.do_sync()
+
+        dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
+
+        self.assertEqual(dircmp.left_only, ["lost+found", "subdir"])
+        self.assertEqual(dircmp.right_only, [])
+        self.assertEqual(dircmp.diff_files, [])
+
+
+class CollectCommandOutputSuite(unittest.TestCase):
+
+    def test_collect_output(self):
+
+        file_names = []
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        python_module = os.path.join(current_dir, "print_dir.py")
+        file_names = output_as_dict(["python", python_module])
+        print "bla" not in file_names
+        print "TODO.org" not in file_names
