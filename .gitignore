@@ -1,2 +1,10 @@
-users.py
+# Emacs
+*~
+*#
+
+# Python
 *.pyc
+.tox/
+build/
+dist/
+git_cc.egg-info/

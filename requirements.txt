@@ -1,0 +1,13 @@
+argparse==1.2.1
+colorama==0.3.7
+pkginfo==1.3.2
+pluggy==0.3.1
+py==1.4.31
+requests==2.10.0
+requests-toolbelt==0.6.2
+six==1.10.0
+tox==2.3.1
+twine==1.6.5
+virtualenv==15.0.2
+wsgiref==0.1.2
+zest.releaser==6.6.4

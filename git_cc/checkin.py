@@ -1,12 +1,13 @@
 """Checkin new git changesets to Clearcase"""
 
-from common import *
-from clearcase import cc
-from status import Modify, Add, Delete, Rename, SymLink
+from .common import *
+from .clearcase import cc
+from .status import Modify, Add, Delete, Rename, SymLink
 import filecmp
 from os import listdir
 from os.path import isdir
-import cache, reset
+from . import cache
+from . import reset
 
 IGNORE_CONFLICTS=False
 LOG_FORMAT = '%H%x01%B'
