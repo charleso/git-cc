@@ -173,10 +173,9 @@ class CollectCommandOutputSuite(unittest.TestCase):
 
     def test_collect_output(self):
 
-        file_names = []
-
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        python_module = os.path.join(current_dir, "print_dir.py")
-        file_names = output_as_dict(["python", python_module])
-        print "bla" not in file_names
-        print "TODO.org" not in file_names
+        module = os.path.join(current_dir, "print_dir.py")
+        directory = os.path.join(current_dir, "output-as-dict-data")
+        contents = output_as_dict(["python", module, directory])
+
+        self.assertEqual(sorted(["a.txt", "b.txt"]), sorted(contents))

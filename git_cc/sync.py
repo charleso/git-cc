@@ -1,41 +1,49 @@
 """Copy files from Clearcase to Git manually"""
 
 import filecmp
+import os.path
+import shutil
+import stat
 import subprocess
+import sys
 
-from .common import *
-from .cache import *
-import os, shutil, stat
-from os.path import join, abspath, isdir
 from fnmatch import fnmatch
+
+from .cache import Cache
+from .common import CC_DIR
+from .common import GIT_DIR
+from .common import cfg
+from .common import debug
+from .common import mkdirs
+from .common import validateCC
 
 ARGS = {
     'cache': 'Use the cache for faster syncing'
 }
 
-class Filters(object):
-    """Implements a list of filter functions.
 
-    A filter function returns True or False on a given directory or file. True
-    means that the directory (or file) should be skipped and False means it
-    should not be skipped.
+def copy(file_name, src_dir, dst_dir):
+    """Copies the given file from its source to its destination directory.
 
-    If and only if at least one of a filter functions returns True for a given
-    directory (or file), that directory (or file) should be skipped.
+    If the file already exists in the destination directory, this function only
+    overwrites the destination file if the contents are different.
+
+    This function returns True if and only if the file is actually copied.
+
+    The destination file gets read and write permissions. It also gets the same
+    last access time and last modification time as the source file.
 
     """
-
-    def __init__(self, *filters):
-
-        self.filters = [f for f in filters]
-
-    def skip(self, path):
-        skip_path = False
-        for f in self.filters:
-            skip_path = f(path)
-            if skip_path:
-                break
-        return skip_path
+    src_file = os.path.join(src_dir, file_name)
+    dst_file = os.path.join(dst_dir, file_name)
+    copy_file = not os.path.exists(dst_file) or \
+        not filecmp.cmp(src_file, dst_file, shallow=False)
+    if copy_file:
+        debug('Copying to %s' % dst_file)
+        mkdirs(dst_file)
+        shutil.copy2(src_file, dst_file)
+        os.chmod(dst_file, stat.S_IREAD | stat.S_IWRITE)
+    return copy_file
 
 
 class Sync(object):
@@ -49,7 +57,7 @@ class Sync(object):
         copied_file_count = 0
         for rel_dir, file_names in self.iter_src_files():
             for file_name in file_names:
-                file_path = join(rel_dir, file_name)
+                file_path = os.path.join(rel_dir, file_name)
                 if copy(file_path, self.src_root, self.dst_root):
                     copied_file_count += 1
         return copied_file_count
@@ -64,9 +72,6 @@ class Sync(object):
 
 class ClearCaseSync(Sync):
     """Implements the copying of a directory tree under ClearCase control."""
-
-    def __init__(self, src_root, dst_root):
-        super(ClearCaseSync, self). __init__(src_root, dst_root)
 
     def iter_src_files(self):
 
@@ -83,7 +88,9 @@ class ClearCaseSync(Sync):
             yield rel_dir, filter(lambda f: under_vc(rel_dir, f), files)
 
     def collect_private_files(self):
-        return output_as_dict(["blablabla"])
+        command = "cleartool ls -recurse -view_only {}".format(self.src_root)
+
+        return output_as_dict(command.split(' '))
 
 
 def main(cache=False):
@@ -92,20 +99,6 @@ def main(cache=False):
         return syncCache()
 
     return ClearCaseSync(CC_DIR, cfg.getInclude()).do_sync()
-
-
-def copy(file, src_dir, dst_dir):
-    src_file = join(src_dir, file)
-    dst_file = join(dst_dir, file)
-    skip_file = os.path.exists(dst_file) and \
-        filecmp.cmp(src_file, dst_file, shallow=False)
-    if not skip_file:
-        debug('Copying to %s' % dst_file)
-        mkdirs(dst_file)
-        shutil.copy2(src_file, dst_file)
-        os.chmod(dst_file, stat.S_IREAD | stat.S_IWRITE)
-        return True
-    return False
 
 
 def output_as_dict(args):
@@ -124,7 +117,7 @@ def syncCache():
     for path in cache2.list():
         if not cache1.contains(path):
             cache1.update(path)
-            if not isdir(join(CC_DIR, path.file)):
+            if not os.path.isdir(os.path.join(CC_DIR, path.file)):
                 if copy(path.file):
                     copied_file_count += 1
     cache1.write()
