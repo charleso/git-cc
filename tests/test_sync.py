@@ -5,10 +5,10 @@ import sys
 import stat
 import unittest
 
-from git_cc.sync import copy
-from git_cc.sync import output_as_dict
 from git_cc.sync import Sync
+from git_cc.sync import SyncFile
 from git_cc.sync import ClearCaseSync
+from git_cc.sync import output_as_dict
 
 if sys.version_info[0] == 2:
     from mock import Mock
@@ -41,7 +41,8 @@ class CopyTestSuite(unittest.TestCase):
 
         fileName = "a.txt"
 
-        copyIsDone = copy(fileName, src_dir=self.src_dir, dst_dir=self.dst_dir)
+        copyIsDone = SyncFile().do_sync(
+            fileName, src_dir=self.src_dir, dst_dir=self.dst_dir)
         self.assertTrue(copyIsDone)
         src_path = os.path.join(self.src_dir, fileName)
         dst_path = os.path.join(self.dst_dir, fileName)
@@ -64,7 +65,8 @@ class CopyTestSuite(unittest.TestCase):
         # file stats
         shutil.copystat(src_path, dst_path)
 
-        copyIsDone = copy(fileName, src_dir=self.src_dir, dst_dir=self.dst_dir)
+        copyIsDone = SyncFile().do_sync(
+            fileName, src_dir=self.src_dir, dst_dir=self.dst_dir)
         self.assertTrue(copyIsDone)
         self.files_are_equal(src_path, dst_path)
 
@@ -83,7 +85,8 @@ class CopyTestSuite(unittest.TestCase):
         # same and tried to copy it.
         os.chmod(dst_path, stat.S_IREAD)
 
-        copyIsDone = copy(fileName, src_dir=self.src_dir, dst_dir=self.dst_dir)
+        copyIsDone = SyncFile().do_sync(
+            fileName, src_dir=self.src_dir, dst_dir=self.dst_dir)
         self.assertFalse(copyIsDone)
 
     def files_are_equal(self, src_path, dst_path):
@@ -177,6 +180,6 @@ class CollectCommandOutputSuite(unittest.TestCase):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         module = os.path.join(current_dir, "print_dir.py")
         directory = os.path.join(current_dir, "output-as-dict-data")
-        contents = output_as_dict(["python", module, directory])
+        contents = output_as_dict([sys.executable, module, directory])
 
         self.assertEqual(sorted(["a.txt", "b.txt"]), sorted(contents))

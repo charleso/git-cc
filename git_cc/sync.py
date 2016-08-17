@@ -17,47 +17,63 @@ from .common import mkdirs
 from .common import validateCC
 
 ARGS = {
-    'cache': 'Use the cache for faster syncing'
+    'cache':   'Use the cache for faster syncing',
+    'dry_run': 'Only print the paths of files to be synced'
 }
 
 
-def copy(file_name, src_dir, dst_dir):
-    """Copies the given file from its source to its destination directory.
+class SyncFile(object):
+    """Implements the copying of a file."""
 
-    If the file already exists in the destination directory, this function only
-    overwrites the destination file if the contents are different.
+    def do_sync(self, file_name, src_dir, dst_dir):
+        """Copies the given file from its source to its destination directory.
 
-    This function returns True if and only if the file is actually copied.
+        If the file already exists in the destination directory, this function
+        only overwrites the destination file if the contents are different.
 
-    The destination file gets read and write permissions. It also gets the same
-    last access time and last modification time as the source file.
+        This function returns True if and only if the file is actually copied.
 
-    """
-    src_file = os.path.join(src_dir, file_name)
-    dst_file = os.path.join(dst_dir, file_name)
-    copy_file = not os.path.exists(dst_file) or \
-        not filecmp.cmp(src_file, dst_file, shallow=False)
-    if copy_file:
-        debug('Copying to %s' % dst_file)
-        mkdirs(dst_file)
-        shutil.copy2(src_file, dst_file)
-        os.chmod(dst_file, stat.S_IREAD | stat.S_IWRITE)
-    return copy_file
+        The destination file gets read and write permissions. It also gets the
+        same last access time and last modification time as the source file.
 
+        """
+        src_file = os.path.join(src_dir, file_name)
+        dst_file = os.path.join(dst_dir, file_name)
+        copy_file = not os.path.exists(dst_file) or \
+            not filecmp.cmp(src_file, dst_file, shallow=False)
+        if copy_file:
+            debug('Copying to %s' % dst_file)
+            self._sync(src_file, dst_file)
+        return copy_file
+
+    def _sync(self, src_file, dst_file):
+            mkdirs(dst_file)
+            shutil.copy2(src_file, dst_file)
+            os.chmod(dst_file, stat.S_IREAD | stat.S_IWRITE)
+
+
+class IgnoreFile(SyncFile):
+
+    def _sync(self, src_file, dst_file):
+        pass
 
 class Sync(object):
     """Implements the copying of a directory tree."""
 
-    def __init__(self, src_root, dst_root):
+    def __init__(self, src_root, dst_root, sync_file=SyncFile()):
         self.src_root = os.path.abspath(src_root)
         self.dst_root = os.path.abspath(dst_root)
+
+        self.sync_file = sync_file
 
     def do_sync(self):
         copied_file_count = 0
         for rel_dir, file_names in self.iter_src_files():
             for file_name in file_names:
                 file_path = os.path.join(rel_dir, file_name)
-                if copy(file_path, self.src_root, self.dst_root):
+                if self.sync_file.do_sync(file_path,
+                                          self.src_root,
+                                          self.dst_root):
                     copied_file_count += 1
         return copied_file_count
 
@@ -92,12 +108,16 @@ class ClearCaseSync(Sync):
         return output_as_dict(command.split(' '))
 
 
-def main(cache=False):
+def main(cache=False, dry_run=False):
     validateCC()
     if cache:
         return syncCache()
 
-    return ClearCaseSync(CC_DIR, cfg.getInclude()).do_sync()
+    src_dir = CC_DIR
+    dst_dir = cfg.getInclude()
+    sync_file = SyncFile() if not dry_run else IgnoreFile()
+
+    return ClearCaseSync(src_dir, dst_dir, sync_file).do_sync()
 
 
 def output_as_dict(command):
