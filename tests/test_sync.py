@@ -120,24 +120,25 @@ class SyncTestSuite(unittest.TestCase):
     def setUp(self):
 
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.dst_dir = os.path.join(self.current_dir, "sandbox")
+        self.dst_root = os.path.join(self.current_dir, "sandbox")
 
-        if os.path.exists(self.dst_dir):
-            shutil.rmtree(self.dst_dir)
+        if os.path.exists(self.dst_root):
+            shutil.rmtree(self.dst_root)
 
-        os.mkdir(self.dst_dir)
+        os.mkdir(self.dst_root)
 
     def tearDown(self):
-        shutil.rmtree(self.dst_dir)
+        shutil.rmtree(self.dst_root)
 
     def test_sync_copies_directory_tree(self):
 
-        self.src_dir = os.path.join(self.current_dir, "sync-data/simple-tree")
+        self.src_root = os.path.join(self.current_dir, "sync-data/simple-tree")
+        src_dirs = ["."]
 
-        sync = Sync(self.src_dir, self.dst_dir)
+        sync = Sync(self.src_root, src_dirs, self.dst_root)
         sync.do_sync()
 
-        dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
+        dircmp = filecmp.dircmp(self.src_root, self.dst_root)
 
         self.assertEqual(dircmp.left_only, [])
         self.assertEqual(dircmp.right_only, [])
@@ -145,13 +146,14 @@ class SyncTestSuite(unittest.TestCase):
 
     def test_clearcase_sync_copies_directory_tree(self):
 
-        self.src_dir = os.path.join(self.current_dir, "sync-data/simple-tree")
+        self.src_root = os.path.join(self.current_dir, "sync-data/simple-tree")
+        src_dirs = ["."]
 
-        sync = ClearCaseSync(self.src_dir, self.dst_dir)
+        sync = ClearCaseSync(self.src_root, src_dirs, self.dst_root)
         sync.collect_private_files = Mock(return_value={})
         sync.do_sync()
 
-        dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
+        dircmp = filecmp.dircmp(self.src_root, self.dst_root)
 
         self.assertEqual(dircmp.left_only, ['lost+found'])
         self.assertEqual(dircmp.right_only, [])
@@ -159,13 +161,14 @@ class SyncTestSuite(unittest.TestCase):
 
     def test_clearcase_sync_copies_directory_tree_without_private_files(self):
 
-        self.src_dir = os.path.join(self.current_dir, "sync-data/simple-tree")
+        self.src_root = os.path.join(self.current_dir, "sync-data/simple-tree")
+        src_dirs = ["."]
 
-        sync = ClearCaseSync(self.src_dir, self.dst_dir)
+        sync = ClearCaseSync(self.src_root, src_dirs, self.dst_root)
         sync.collect_private_files = Mock(return_value={"subdir/b.txt": 1})
         sync.do_sync()
 
-        dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
+        dircmp = filecmp.dircmp(self.src_root, self.dst_root)
 
         self.assertEqual(
             sorted(dircmp.left_only), sorted(["lost+found", "subdir"]))

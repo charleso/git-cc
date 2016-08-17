@@ -57,11 +57,13 @@ class IgnoreFile(SyncFile):
     def _sync(self, src_file, dst_file):
         pass
 
-class Sync(object):
-    """Implements the copying of a directory tree."""
 
-    def __init__(self, src_root, dst_root, sync_file=SyncFile()):
+class Sync(object):
+    """Implements the copying of multiple directory trees."""
+
+    def __init__(self, src_root, src_dirs, dst_root, sync_file=SyncFile()):
         self.src_root = os.path.abspath(src_root)
+        self.src_dirs = src_dirs
         self.dst_root = os.path.abspath(dst_root)
 
         self.sync_file = sync_file
@@ -78,15 +80,16 @@ class Sync(object):
         return copied_file_count
 
     def iter_src_files(self):
-        root_dir = self.src_root
-        root_dir_length = len(root_dir)
-        for abs_dir, _, file_names in os.walk(root_dir):
-            rel_dir = abs_dir[root_dir_length + 1:]
-            yield rel_dir, file_names
+        for src_dir in self.src_dirs:
+            root_dir = os.path.join(self.src_root, src_dir)
+            root_dir_length = len(root_dir)
+            for abs_dir, _, file_names in os.walk(root_dir):
+                rel_dir = abs_dir[root_dir_length + 1:]
+                yield rel_dir, file_names
 
 
 class ClearCaseSync(Sync):
-    """Implements the copying of a directory tree under ClearCase control."""
+    """Implements the copying of multiple directory trees under ClearCase."""
 
     def iter_src_files(self):
 
@@ -113,11 +116,12 @@ def main(cache=False, dry_run=False):
     if cache:
         return syncCache()
 
-    src_dir = CC_DIR
-    dst_dir = cfg.getInclude()
+    src_root = CC_DIR
+    src_dirs = cfg.getInclude()
+    dst_root = GIT_DIR
     sync_file = SyncFile() if not dry_run else IgnoreFile()
 
-    return ClearCaseSync(src_dir, dst_dir, sync_file).do_sync()
+    return ClearCaseSync(src_root, src_dirs, dst_root, sync_file).do_sync()
 
 
 def output_as_dict(command):
