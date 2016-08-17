@@ -5,7 +5,6 @@ import os.path
 import shutil
 import stat
 import subprocess
-import sys
 
 from fnmatch import fnmatch
 
@@ -101,8 +100,22 @@ def main(cache=False):
     return ClearCaseSync(CC_DIR, cfg.getInclude()).do_sync()
 
 
-def output_as_dict(args):
-    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+def output_as_dict(command):
+    """Execute the given command.
+
+    Arguments:
+    command -- list that specifies the command and its arguments
+
+    An example of a command is ["ls", "-la"], which specifies the execution of
+    the "ls -la".
+
+    """
+    # The universal_newlines keyword argument in the next statement makes sure
+    # the output stream is a text stream instead of a byte stream. In that way
+    # the output results in a sequence of strings, which is easier to process
+    # than a sequence of byte sequences.
+    p = subprocess.Popen(
+        command, stdout=subprocess.PIPE, universal_newlines=True)
     return dict((line.rstrip(), 1) for line in p.stdout)
 
 

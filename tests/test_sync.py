@@ -164,7 +164,8 @@ class SyncTestSuite(unittest.TestCase):
 
         dircmp = filecmp.dircmp(self.src_dir, self.dst_dir)
 
-        self.assertEqual(dircmp.left_only, ["lost+found", "subdir"])
+        self.assertEqual(
+            sorted(dircmp.left_only), sorted(["lost+found", "subdir"]))
         self.assertEqual(dircmp.right_only, [])
         self.assertEqual(dircmp.diff_files, [])
 
