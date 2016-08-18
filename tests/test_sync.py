@@ -8,7 +8,7 @@ import unittest
 from git_cc.sync import Sync
 from git_cc.sync import SyncFile
 from git_cc.sync import ClearCaseSync
-from git_cc.sync import output_as_dict
+from git_cc.sync import output_as_set
 
 if sys.version_info[0] == 2:
     from mock import Mock
@@ -185,7 +185,7 @@ class CollectCommandOutputSuite(unittest.TestCase):
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         module = os.path.join(current_dir, "print_dir.py")
-        directory = os.path.join(current_dir, "output-as-dict-data")
-        contents = output_as_dict([sys.executable, module, directory])
+        directory = os.path.join(current_dir, "output-as-set-data")
+        contents = output_as_set([sys.executable, module, directory])
 
-        self.assertEqual(sorted(["a.txt", "b.txt"]), sorted(contents))
+        self.assertEqual(set(["a.txt", "b.txt"]), contents)

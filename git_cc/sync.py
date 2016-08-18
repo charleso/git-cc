@@ -106,14 +106,14 @@ class ClearCaseSync(Sync):
             yield rel_dir, filter(lambda f: under_vc(rel_dir, f), files)
 
     def collect_private_files(self):
-        """Return the dictionary of private files.
+        """Return the set of private files.
 
         Each private file is specified by its complete path. The ClearCase
         command to list the private files returns them like that.
 
         """
         command = "cleartool ls -recurse -view_only {}".format(self.src_root)
-        return output_as_dict(command.split(' '))
+        return output_as_set(command.split(' '))
 
 
 def main(cache=False, dry_run=False):
@@ -129,7 +129,7 @@ def main(cache=False, dry_run=False):
     return ClearCaseSync(src_root, src_dirs, dst_root, sync_file).do_sync()
 
 
-def output_as_dict(command):
+def output_as_set(command):
     """Execute the given command.
 
     Arguments:
@@ -145,7 +145,7 @@ def output_as_dict(command):
     # than a sequence of byte sequences.
     p = subprocess.Popen(
         command, stdout=subprocess.PIPE, universal_newlines=True)
-    result = dict((line.rstrip(), 1) for line in p.stdout)
+    result = set(line.rstrip() for line in p.stdout)
     p.stdout.close()
     return result
 
