@@ -145,7 +145,9 @@ def output_as_dict(command):
     # than a sequence of byte sequences.
     p = subprocess.Popen(
         command, stdout=subprocess.PIPE, universal_newlines=True)
-    return dict((line.rstrip(), 1) for line in p.stdout)
+    result = dict((line.rstrip(), 1) for line in p.stdout)
+    p.stdout.close()
+    return result
 
 
 def syncCache():
