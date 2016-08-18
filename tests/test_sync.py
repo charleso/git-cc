@@ -146,7 +146,8 @@ class SyncTestSuite(unittest.TestCase):
 
     def test_clearcase_sync_copies_directory_tree(self):
 
-        self.src_root = os.path.join(self.current_dir, "sync-data/simple-tree")
+        self.src_root = os.path.join(
+            self.current_dir, "sync-data", "simple-tree")
         src_dirs = ["."]
 
         sync = ClearCaseSync(self.src_root, src_dirs, self.dst_root)
@@ -161,11 +162,13 @@ class SyncTestSuite(unittest.TestCase):
 
     def test_clearcase_sync_copies_directory_tree_without_private_files(self):
 
-        self.src_root = os.path.join(self.current_dir, "sync-data/simple-tree")
+        self.src_root = os.path.join(
+            self.current_dir, "sync-data", "simple-tree")
         src_dirs = ["."]
 
         sync = ClearCaseSync(self.src_root, src_dirs, self.dst_root)
-        sync.collect_private_files = Mock(return_value={"subdir/b.txt": 1})
+        private_file = os.path.join(self.src_root, "subdir", "b.txt")
+        sync.collect_private_files = Mock(return_value={private_file: 1})
         sync.do_sync()
 
         dircmp = filecmp.dircmp(self.src_root, self.dst_root)

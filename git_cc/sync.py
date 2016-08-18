@@ -96,7 +96,7 @@ class ClearCaseSync(Sync):
         private_files = self.collect_private_files()
 
         def under_vc(rel_dir, file_name):
-            path = os.path.join(rel_dir, file_name)
+            path = os.path.join(self.src_root, rel_dir, file_name)
             return path not in private_files
 
         iter_src_files = super(ClearCaseSync, self).iter_src_files
@@ -106,8 +106,13 @@ class ClearCaseSync(Sync):
             yield rel_dir, filter(lambda f: under_vc(rel_dir, f), files)
 
     def collect_private_files(self):
-        command = "cleartool ls -recurse -view_only {}".format(self.src_root)
+        """Return the dictionary of private files.
 
+        Each private file is specified by its complete path. The ClearCase
+        command to list the private files returns them like that.
+
+        """
+        command = "cleartool ls -recurse -view_only {}".format(self.src_root)
         return output_as_dict(command.split(' '))
 
 
