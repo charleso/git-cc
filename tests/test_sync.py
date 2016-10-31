@@ -5,6 +5,7 @@ import sys
 import stat
 import unittest
 
+from git_cc.common import GitConfigParser
 from git_cc.sync import Sync
 from git_cc.sync import SyncFile
 from git_cc.sync import ClearCaseSync
@@ -17,6 +18,8 @@ elif sys.version_info[0] == 3:
         from mock import Mock
     else:
         from unittest.mock import Mock
+
+_current_dir = os.path.dirname(__file__)
 
 
 class CopyTestSuite(unittest.TestCase):
@@ -189,3 +192,33 @@ class CollectCommandOutputSuite(unittest.TestCase):
         contents = output_as_set([sys.executable, module, directory])
 
         self.assertEqual(set(["a.txt", "b.txt"]), contents)
+
+
+class SyncConfigTestSuite(unittest.TestCase):
+
+    def test_retrieval_of_setting_using_config(self):
+
+        gitcc_config_path = self.get_path_to("gitcc")
+
+        cfg = GitConfigParser("don't care section", gitcc_config_path)
+        cfg.read()
+
+        self.assertTrue(cfg.ignorePrivateFiles())
+
+    def test_retrieval_of_setting_using_empty_config(self):
+
+        gitcc_config_path = self.get_path_to("gitcc-empty")
+
+        cfg = GitConfigParser("don't care section", gitcc_config_path)
+        cfg.read()
+
+        self.assertFalse(cfg.ignorePrivateFiles())
+
+    def get_path_to(self, file_name):
+        """Return the path to the given file in directory "sync-config".
+
+        Directory "sync-config" is located in the same directory as the current
+        file.
+
+        """
+        return os.path.join(_current_dir, "sync-config", file_name)

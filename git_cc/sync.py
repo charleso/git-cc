@@ -126,7 +126,13 @@ def main(cache=False, dry_run=False):
     dst_root = GIT_DIR
     sync_file = SyncFile() if not dry_run else IgnoreFile()
 
-    return ClearCaseSync(src_root, src_dirs, dst_root, sync_file).do_sync()
+    # determine whether we should sync all files or only the files that are
+    # under ClearCase control
+    syncClass = Sync
+    if cfg.ignorePrivateFiles():
+        syncClass = ClearCaseSync
+
+    return syncClass(src_root, src_dirs, dst_root, sync_file).do_sync()
 
 
 def output_as_set(command):
