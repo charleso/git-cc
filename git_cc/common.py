@@ -181,6 +181,15 @@ class GitConfigParser():
                 abs_path = os.path.join(config_dir, path)
         return abs_path
 
+    def ignorePrivateFiles(self):
+        """Return true if and only if private files should not be synced.
+
+        If this option holds, only the files that are under ClearCase control
+        will be synced. Otherwise all the files in the VOB are synced.
+
+        """
+        return self.getCore('ignore_private_files', False)
+
 
 def write(file, blob):
     _write(file, blob)
