@@ -4,6 +4,7 @@ Changelog for git-cc
 1.0.1 (unreleased)
 ------------------
 
+- gitcc --update only syncs files under ClearCase control.
 - Various fixes to work towards Python 3 compatibility.
 - Various improvements to the update command:
   - only copies files that have changed;

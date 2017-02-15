@@ -100,6 +100,7 @@ allows you to limit which branches and folders you import from:
     include = FolderA|FolderB
     exclude = FolderA/sub/folder|FolderB/other/file
     users_module_path = users.py
+    ignore_private_files = False
     debug = False
     type = UCM
     [master]
@@ -131,6 +132,12 @@ from directory .git. But you can also use an absolute users module path.
 
 If you do not specify the users module path in the config file, the ClearCase
 user information will be used.
+
+If you make a snapshot of a ClearCase VOB, you copy all the files that are
+visible in the view, including view-private files. This might not be what you
+want, for example if the VOB contains all kinds of build artifacts. To only
+copy the files that are actually under ClearCase control, set the key
+'ignore\_private\_files' to True.
 
 ## Notes
 
