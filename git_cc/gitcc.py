@@ -38,8 +38,10 @@ def invoke(cmd, args):
             'help': cmd.ARGS[name],
             'dest': name,
         }
-        if not default:
+        if default is False:
             option['action'] = "store_true"
+        elif default is None:
+            option['action'] = "store"
         name = name.replace('_', '-')
         parser.add_option('--' + name, **option)
     (options, args) = parser.parse_args(args[1:])
