@@ -97,7 +97,8 @@ def decodeString(encoding, encodestr):
         return encodestr.decode(encoding)
     except UnicodeDecodeError as e:
         print >> sys.stderr, encodestr, ":", e
-        return encodestr.decode(encoding, "ignore")
+        ascii_only = re.sub(r'[^\x00-\x7f]',r' ',encodestr)
+        return encodestr.decode(ascii_only, "ignore")
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
