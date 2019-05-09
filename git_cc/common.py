@@ -225,7 +225,7 @@ CURRENT_BRANCH = getCurrentBranch() or 'master'
 cfg = GitConfigParser(CURRENT_BRANCH)
 cfg.read()
 CC_DIR = path(cfg.get(CFG_CC))
-DEBUG = cfg.getCore('debug', True)
+DEBUG = str(cfg.getCore('debug', True)) == str(True)
 CC_TAG = CURRENT_BRANCH + '_cc'
 CI_TAG = CURRENT_BRANCH + '_ci'
 users = get_users_module(cfg.getUsersModulePath())
