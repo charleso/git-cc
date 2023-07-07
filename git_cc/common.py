@@ -97,7 +97,7 @@ def decodeString(encoding, encodestr):
         return encodestr.decode(encoding)
     except UnicodeDecodeError as e:
         print >> sys.stderr, encodestr, ":", e
-        return encodestr.decode(encoding, "ignore")
+        return ''.join([c if ord(c) < 128 else '' for c in encodestr])
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
