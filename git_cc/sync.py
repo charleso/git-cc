@@ -18,7 +18,8 @@ from .common import validateCC
 
 ARGS = {
     'cache':   'Use the cache for faster syncing',
-    'dry_run': 'Only print the paths of files to be synced'
+    'dry_run': 'Only print the paths of files to be synced',
+    'sync_empty_folders': 'Sync empty folders from dest to src folder'
 }
 
 
@@ -78,6 +79,19 @@ class Sync(object):
                                           self.dst_root):
                     copied_file_count += 1
         return copied_file_count
+    
+    def do_sync_empty_folders(self):
+        empty_folders_count = 0
+        for rel_dir, file_names in self.iter_src_files():
+            if len(file_names) == 0 and len(rel_dir) > 0:
+                print("Found Empty dir %s" % rel_dir)
+                file_path = os.path.join(self.dst_root, rel_dir, '.keep')
+                print("Create file %s" % file_path)
+                mkdirs(file_path)
+                with open(file_path, "w") as text_file:
+                    text_file.write("Keep it for empty folder")
+                empty_folders_count += 1           
+        return empty_folders_count
 
     def iter_src_files(self):
         for src_dir in self.src_dirs:
@@ -116,7 +130,7 @@ class ClearCaseSync(Sync):
         return output_as_set(command.split(' '))
 
 
-def main(cache=False, dry_run=False):
+def main(cache=False, dry_run=False, sync_empty_folders=False):
     validateCC()
     if cache:
         return syncCache()
@@ -132,7 +146,10 @@ def main(cache=False, dry_run=False):
     if cfg.ignorePrivateFiles():
         syncClass = ClearCaseSync
 
-    return syncClass(src_root, src_dirs, dst_root, sync_file).do_sync()
+    if sync_empty_folders:
+        return syncClass(src_root, src_dirs, dst_root, sync_file).do_sync_empty_folders()
+    else:
+        return syncClass(src_root, src_dirs, dst_root, sync_file).do_sync()
 
 
 def output_as_set(command):
